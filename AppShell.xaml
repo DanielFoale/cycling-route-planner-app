@@ -1,14 +1,27 @@
-<?xml version="1.0" encoding="UTF-8" ?>
-<Shell
-    x:Class="CyclingRoutePlannerApp.AppShell"
-    xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
-    xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-    xmlns:local="clr-namespace:CyclingRoutePlannerApp"
-    Shell.FlyoutBehavior="Disabled">
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       x:Class="CyclingRoutePlannerApp.AppShell"
+       xmlns:Pages="clr-namespace:CyclingRoutePlannerApp"
+       Title="AppShell"
+       BackgroundColor="Black">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <Shell.FlyoutHeader>
+        <Grid>
+            <Label Text="Menu"
+                   FontSize="30"/>
+        </Grid>
+    </Shell.FlyoutHeader>
+
+    <ShellItem Route="LoginPage" FlyoutItemIsVisible="False">
+        <ShellContent ContentTemplate="{DataTemplate Pages:LoginPage}"/>
+    </ShellItem>
+
+    <ShellItem Route="RegistrationPage" FlyoutItemIsVisible="False">
+        <ShellContent ContentTemplate="{DataTemplate Pages:RegistrationPage}"/>
+    </ShellItem>
+
+    <ShellContent Title="New Route" ContentTemplate="{DataTemplate Pages:MainPage}" Route="MainPage"/>
+    <ShellContent Title="Preferences" ContentTemplate="{DataTemplate Pages:PreferencesPage}" />
+    <ShellContent Title="Routes" ContentTemplate="{DataTemplate Pages:RoutesPage}" />
 
 </Shell>

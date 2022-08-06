@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="CyclingRoutePlannerApp.RegistrationPage"
+             Title="RegistrationPage">
+
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Back to login" Clicked="ToolbarItem_Clicked"/>
+    </ContentPage.ToolbarItems>
+
+    <VerticalStackLayout>
+        <Label 
+            Text="Register"
+            VerticalOptions="Center" 
+            HorizontalOptions="Center" />
+    </VerticalStackLayout>
+</ContentPage>
