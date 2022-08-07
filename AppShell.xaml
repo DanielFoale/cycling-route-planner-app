@@ -16,12 +16,13 @@
         <ShellContent ContentTemplate="{DataTemplate Pages:LoginPage}"/>
     </ShellItem>
 
-    <ShellItem Route="RegistrationPage" FlyoutItemIsVisible="False">
+    <ShellItem Title="RegistrationPage"  Route="RegistrationPage" FlyoutItemIsVisible="False">
         <ShellContent ContentTemplate="{DataTemplate Pages:RegistrationPage}"/>
     </ShellItem>
 
     <ShellContent Title="New Route" ContentTemplate="{DataTemplate Pages:MainPage}" Route="MainPage"/>
     <ShellContent Title="Preferences" ContentTemplate="{DataTemplate Pages:PreferencesPage}" />
-    <ShellContent Title="Routes" ContentTemplate="{DataTemplate Pages:RoutesPage}" />
+    <ShellContent Title="Saved Routes" ContentTemplate="{DataTemplate Pages:RoutesPage}" />
+    <ShellContent Title="Logout" ContentTemplate="{DataTemplate Pages:LoginPage}" />
 
 </Shell>

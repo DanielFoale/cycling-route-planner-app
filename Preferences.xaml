@@ -4,9 +4,37 @@
              x:Class="CyclingRoutePlannerApp.PreferencesPage"
              Title="Preferences">
     <VerticalStackLayout>
-        <Label 
-            Text="Select preferences below"
-            VerticalOptions="Center" 
-            HorizontalOptions="Center" />
+        <StackLayout Margin="30,15">
+            <Label Text="How fast do you cycle?" FontSize="18"/>
+            <RadioButton Content="Slow" />
+            <RadioButton Content="Moderate" IsChecked="True"/>
+            <RadioButton Content="Fast" />
+        </StackLayout>
+        <StackLayout Margin="30,15">
+            <Label Text="Avoid steep paths?" FontSize="18"/>
+            <RadioButton Content="As much as possible" />
+            <RadioButton Content="Within reason"/>
+            <RadioButton Content="Not if slower" IsChecked="True"/>
+        </StackLayout>
+
+        <HorizontalStackLayout>
+            <Label
+            Margin="30,15"
+            Text="Keep to cycle lanes?"
+            VerticalOptions="Center"    
+            HorizontalOptions="Start"
+            FontSize="18"/>
+            <Switch IsToggled="False"/>
+        </HorizontalStackLayout>
+        <HorizontalStackLayout>
+            <Label
+            Margin="30,15"
+            Text="Avoid 30mph+ roads?"
+            VerticalOptions="Center"    
+            HorizontalOptions="Start"
+            FontSize="18"/>
+            <Switch IsToggled="False"/>
+        </HorizontalStackLayout>
+
     </VerticalStackLayout>
 </ContentPage>

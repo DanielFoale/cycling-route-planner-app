@@ -2,23 +2,31 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="CyclingRoutePlannerApp.LoginPage"
-             Title="Login"
-             Shell.FlyoutBehavior="Disabled"
-             Shell.NavBarIsVisible="False">
+             Title="Sign in"
+             Shell.FlyoutBehavior="Disabled">
 
     <VerticalStackLayout>
-        <Button 
-            VerticalOptions="Center" 
-            HorizontalOptions="Center"
-            Text="Login"
-             
-            
-            Clicked ="Button_Clicked"/>
-        <Label Text="Register" VerticalOptions="Center" HorizontalOptions="Center">
-            
-               <Label.GestureRecognizers>
-            <TapGestureRecognizer Tapped="TapGestureRecongnizer_Tapped"/>
+        <Label Text="New to App? Register here" VerticalOptions="Center" HorizontalOptions="Start" TextColor="MediumPurple" FontSize="16" Margin="0,10">
+
+            <Label.GestureRecognizers>
+                <TapGestureRecognizer Tapped="TapGestureRecongnizer_Tapped"/>
             </Label.GestureRecognizers>
         </Label>
+
+        <Entry BackgroundColor="DarkGray" Placeholder="Email Address" Margin="0,10"/>
+
+
+        <Entry BackgroundColor="DarkGray" Placeholder="Password" IsPassword="True" Margin="0,10"/>
+       
+
+        <Button 
+            VerticalOptions="Center"
+            HorizontalOptions="Fill"
+            Text="Sign in"
+             FontSize="18"
+            
+            Clicked ="Button_Clicked"/>
+
+
     </VerticalStackLayout>
 </ContentPage>

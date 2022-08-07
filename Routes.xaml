@@ -2,11 +2,22 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="CyclingRoutePlannerApp.RoutesPage"
-             Title="Routes">
-    <VerticalStackLayout>
+             Title="Saved Routes">
+    <VerticalStackLayout Padding="30,0">
         <Label 
-            Text="Saved Routes"
+            Text="Home to Work"
             VerticalOptions="Center" 
-            HorizontalOptions="Center" />
+            HorizontalOptions="Start"
+            Margin="0,10"/>
+        <Label 
+            Text="Work to Home"
+            VerticalOptions="Center" 
+            HorizontalOptions="Start"
+            Margin="0,10"/>
+        <Label 
+            Text="Home to Shops"
+            VerticalOptions="Center" 
+            HorizontalOptions="Start"
+            Margin="0,10"/>
     </VerticalStackLayout>
 </ContentPage>

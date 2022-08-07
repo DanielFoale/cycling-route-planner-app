@@ -4,18 +4,13 @@
              x:Class="CyclingRoutePlannerApp.MainPage"
              Title="New Route">
 
-
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Logout" Clicked="ToolbarItem_Clicked"/>
-    </ContentPage.ToolbarItems>
-
     <ScrollView>
         <VerticalStackLayout
             Spacing="25"
             Padding="30,30">
 
 
-            <Entry Placeholder="Enter start point here" />
+            <Entry Placeholder="Enter start point here"/>
 
             <Entry Placeholder="Enter end point here" />
 
@@ -23,7 +18,8 @@
                 x:Name="GoBtn"
                 Text="Generate Route"
                 Clicked="OnBtnClicked"
-                HorizontalOptions="Center" />
+                HorizontalOptions="Center"
+                FontSize="18"/>
 
             <Label
                 Text="Map"

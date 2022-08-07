@@ -13,10 +13,5 @@ public partial class MainPage : ContentPage
 
         SemanticScreenReader.Announce(GoBtn.Text);
     }
-
-    private async void ToolbarItem_Clicked(object sender, EventArgs e)
-    {
-        await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
-    }
 }
 
