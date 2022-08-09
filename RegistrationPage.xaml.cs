@@ -11,6 +11,7 @@ public partial class RegistrationPage : ContentPage
     {
         passwordEntry.Text = null;
         usernameEntry.Text = null;
+        passwordComplexity.Text = null;
         await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
     }
     private async void Button_Clicked(object sender, EventArgs e)
