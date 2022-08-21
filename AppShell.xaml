@@ -23,6 +23,6 @@
     <ShellContent Title="New Route" ContentTemplate="{DataTemplate Pages:MainPage}" Route="MainPage"/>
     <ShellContent Title="Preferences" ContentTemplate="{DataTemplate Pages:PreferencesPage}" />
     <ShellContent Title="Saved Routes" ContentTemplate="{DataTemplate Pages:RoutesPage}" />
-    <ShellContent Title="Logout" ContentTemplate="{DataTemplate Pages:LoginPage}" />
+    <ShellContent Title="Sign out" ContentTemplate="{DataTemplate Pages:LoginPage}" />
 
 </Shell>

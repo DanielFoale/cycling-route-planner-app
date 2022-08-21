@@ -48,4 +48,13 @@
 		<MauiAsset Include="Resources\Raw\**" LogicalName="%(RecursiveDir)%(Filename)%(Extension)" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <PackageReference Include="Microsoft.Data.SqlClient" Version="5.0.0" />
+	  <PackageReference Include="MySql.Data" Version="8.0.30" />
+	  <PackageReference Include="MySqlConnector" Version="2.1.12" />
+	  <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+	  <PackageReference Include="System.Data.SqlClient" Version="4.8.3" />
+	  <PackageReference Include="System.Net.Requests" Version="4.3.0" />
+	</ItemGroup>
+
 </Project>
