@@ -1,7 +1,16 @@
+using MySql.Data.MySqlClient;
+using Newtonsoft.Json.Linq;
+using System.Net;
+
 namespace CyclingRoutePlannerApp;
 
 public partial class RegistrationPage : ContentPage
 {
+    public class MyObject
+    {
+        public string Username { get; set; }
+        public string Password { get; set; }
+    }
 	public RegistrationPage()
 	{
 		InitializeComponent();
@@ -14,14 +23,39 @@ public partial class RegistrationPage : ContentPage
         passwordComplexity.Text = null;
         await Shell.Current.GoToAsync($"//{nameof(LoginPage)}");
     }
+
+
+    private static readonly HttpClient client = new HttpClient();
+
+
     private async void Button_Clicked(object sender, EventArgs e)
     {
         passwordComplexity.Text = null;
         if (UsernameValid() & ComplexEnough())
         {
-            passwordEntry.Text = null;
-            usernameEntry.Text = null;
-            await Shell.Current.GoToAsync($"//{nameof(MainPage)}");
+            if(!AlreadyUser())
+            {
+                try
+                {
+                    var values = new Dictionary<string, string>
+                {
+                    { "Username", usernameEntry.Text },
+                    { "Password", passwordEntry.Text }
+                };
+
+                    var content = new FormUrlEncodedContent(values);
+
+                    var response = await client.PostAsync("https://chirk-rhythm.000webhostapp.com/entry.php", content);
+                    var responseString = await response.Content.ReadAsStringAsync();
+                    passwordEntry.Text = null;
+                    usernameEntry.Text = null;
+                    await Shell.Current.GoToAsync($"//{nameof(MainPage)}");
+                }
+                catch (WebException)
+                {
+                    await DisplayAlert("Network error", "Please check your connection and try again.", "OK");
+                }
+            }
         }
     }
     private bool ComplexEnough()
@@ -100,4 +134,28 @@ public partial class RegistrationPage : ContentPage
             return false;
         }
     }
+
+    private bool AlreadyUser()
+    {
+        try
+        {
+            string json = new WebClient().DownloadString("https://chirk-rhythm.000webhostapp.com/");
+            var objects = JArray.Parse(json);
+            foreach (JObject item in objects)
+            {
+                if (item.GetValue("Username").ToString() == usernameEntry.Text)
+                {
+                    passwordComplexity.Text = "An account already exists with this username.\n";
+                    return true;
+                }
+            }
+            return false;
+        }
+        catch (WebException)
+        {
+            DisplayAlert("Network error", "Please check your connection and try again.", "OK");
+            return true;
+        }
+    }
+        
 }
