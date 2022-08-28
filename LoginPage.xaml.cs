@@ -21,7 +21,9 @@ public partial class LoginPage : ContentPage
         {
             try
             {
-                string json = new WebClient().DownloadString("https://chirk-rhythm.000webhostapp.com/");
+                var LoginCheck = new WebClient();
+                LoginCheck.Headers.Add("User-Agent", ".NET Application CycleThere");
+                string json = LoginCheck.DownloadString("https://chirk-rhythm.000webhostapp.com/");
                 var objects = JArray.Parse(json);
                 bool usernameFound = false;
                 foreach (JObject item in objects)

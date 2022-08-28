@@ -9,12 +9,23 @@
             Spacing="25"
             Padding="30,30">
 
+            <Entry x:Name="startPoint" Placeholder="Enter start point here" Completed="OnEnterStart" BackgroundColor="DarkGray" />
 
-            <Entry Placeholder="Enter start point here"/>
+            <Picker Title=""
+                x:Name="startAddressesList"
+                SelectedIndexChanged="OnStartAddressPickerSelectedIndexChanged">
+            </Picker>
 
-            <Entry Placeholder="Enter end point here" />
 
-            <Button
+
+            <Entry x:Name="endPoint" Placeholder="Enter end point here" Completed="OnEnterEnd" BackgroundColor="DarkGray"/>
+
+            <Picker Title=""
+                x:Name="endAddressesList"
+                    SelectedIndexChanged="OnEndAddressPickerSelectedIndexChanged"
+                    />
+
+                <Button
                 x:Name="GoBtn"
                 Text="Generate Route"
                 Clicked="OnBtnClicked"
@@ -22,6 +33,7 @@
                 FontSize="18"/>
 
             <Label
+                x:Name="map"
                 Text="Map"
                 SemanticProperties.HeadingLevel="Level1"
                 FontSize="52"
