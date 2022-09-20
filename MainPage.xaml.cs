@@ -1,13 +1,117 @@
-﻿using Newtonsoft.Json.Linq;
+﻿using Microsoft.Maui;
+using Newtonsoft.Json.Linq;
+using QuikGraph;
+using QuikGraph.Algorithms;
+using QuikGraph.Algorithms.ShortestPath;
+using QuikGraph.Collections;
+using System.Diagnostics.Metrics;
+using System.Linq;
 using System.Net;
+using System.Globalization;
+using CsvHelper;
+using System.Formats.Asn1;
+using Google.Protobuf.WellKnownTypes;
+using System.IO;
 
 namespace CyclingRoutePlannerApp;
 
+
+
 public partial class MainPage : ContentPage
 {
+    
+
     public MainPage()
-	{
-		InitializeComponent();
+    {
+        InitializeComponent();
+        
+        RoadNetwork bristol = new RoadNetwork();
+
+        using var streamReader = new StreamReader("C:/Users/Daniel/nodes.csv");
+        using var csvReader = new CsvReader(streamReader, CultureInfo.CurrentCulture);
+
+        string value;
+
+        csvReader.Read();
+
+        while (csvReader.Read())
+        {
+            string[] array1 = new string[3];
+
+            for (int i = 0; csvReader.TryGetField<string>(i, out value); i++)
+            {
+                array1[i] = value;
+            }
+
+            Crossroad bit = new Crossroad(Convert.ToInt64(array1[0]), Convert.ToDouble(array1[1]), Convert.ToDouble(array1[2]));
+
+            bristol.crossroadList.Add(bit);
+        }
+
+        streamReader.Close();
+
+        using var streamReader2 = new StreamReader("C:/Users/Daniel/edges.csv");
+        using var csvReader2 = new CsvReader(streamReader2, CultureInfo.CurrentCulture);
+
+        string value2;
+
+        csvReader2.Read();
+
+        while (csvReader2.Read())
+        {
+            string[] array1 = new string[10];
+
+            for (int i = 0; csvReader2.TryGetField<string>(i, out value2); i++)
+            {
+                array1[i] = value2;
+            }
+
+            Road bit = new Road(Convert.ToInt64(array1[1]), Convert.ToInt64(array1[2]), Convert.ToDouble(array1[3]), Convert.ToInt64(array1[0]), Convert.ToInt32(array1[7]), Convert.ToInt32(array1[8]));
+
+            bristol.roadList.Add(bit);
+        }
+
+        streamReader2.Close();
+
+    }
+
+    class Crossroad
+    {
+        public Crossroad(long id, double latitude, double longitude)
+        {
+            this.id = id;
+            this.latitude = latitude;
+            this.longitude = longitude;
+        }
+
+        public long id;
+        public double latitude;
+        public double longitude;
+    }
+
+    class Road
+    {
+        public Road(long start, long end, double length, long roadPartOf, int bikeInfoForward, int bikeInfoBackward)
+        {
+            this.start = start;
+            this.end = end;
+            this.length = length;
+            this.roadPartOf = roadPartOf;
+        }
+
+        public long start;
+        public long end;
+        public long roadPartOf;
+        public double length;
+        bool isOneWay;
+        bool isCyclePath;
+    }
+
+    class RoadNetwork
+    {
+        public List<Crossroad> crossroadList = new List<Crossroad>();
+        public List<Road> roadList = new List<Road>();
+        public Crossroad currentCrossroad;
     }
 
     private void OnBtnClicked(object sender, EventArgs e)
@@ -150,6 +254,5 @@ public partial class MainPage : ContentPage
     }
 
 
-
-    }
+}
 
