@@ -24,10 +24,15 @@ public partial class MainPage : ContentPage
     public MainPage()
     {
         InitializeComponent();
-        
+        stuff();
+    }
+
+    async void stuff()
+    {
         RoadNetwork bristol = new RoadNetwork();
 
-        using var streamReader = new StreamReader("C:/Users/Daniel/nodes.csv");
+        Stream fileStream = await FileSystem.Current.OpenAppPackageFileAsync("nodes.csv");
+        using var streamReader = new StreamReader(fileStream);
         using var csvReader = new CsvReader(streamReader, CultureInfo.CurrentCulture);
 
         string value;
@@ -50,7 +55,9 @@ public partial class MainPage : ContentPage
 
         streamReader.Close();
 
-        using var streamReader2 = new StreamReader("C:/Users/Daniel/edges.csv");
+
+        Stream fileStream2 = await FileSystem.Current.OpenAppPackageFileAsync("edges.csv");
+        using var streamReader2 = new StreamReader(fileStream2);
         using var csvReader2 = new CsvReader(streamReader2, CultureInfo.CurrentCulture);
 
         string value2;
@@ -72,7 +79,6 @@ public partial class MainPage : ContentPage
         }
 
         streamReader2.Close();
-
     }
 
     class Crossroad
