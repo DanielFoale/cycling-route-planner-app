@@ -19,17 +19,56 @@ namespace CyclingRoutePlannerApp;
 
 public partial class MainPage : ContentPage
 {
-    
+
 
     public MainPage()
     {
         InitializeComponent();
-        stuff();
+        ParseMapData();
+    }
+    public class Road
+    {
+        public Road(double length, long roadPartOf, int bikeStatus)
+        {
+            this.length = length;
+            this.roadPartOf = roadPartOf;
+            if (bikeStatus != 2)
+            {
+                isCyclePath = true;
+            }
+            else
+            {
+                isCyclePath = false;
+            }
+        }
+        public long roadPartOf;
+        public double length;
+        bool isCyclePath;
     }
 
-    async void stuff()
+    public class Junction
     {
-        RoadNetwork bristol = new RoadNetwork();
+        public Junction(long id, double lat, double longitude)
+        {
+            this.id = id;
+            this.lat = lat;
+            this.longitude = longitude;
+        }
+
+        public long id;
+        public double lat;
+        public double longitude;
+    }
+
+    public AdjacencyGraph<Junction, TaggedEdge<Junction, Road>>[] graphs = new AdjacencyGraph<Junction, TaggedEdge<Junction, Road>>[1];
+
+
+    async void ParseMapData()
+    {
+
+
+    IDictionary<long, Junction> Junctions = new Dictionary<long, Junction>();
+    var graph = new AdjacencyGraph<Junction, TaggedEdge<Junction, Road>>();
 
         Stream fileStream = await FileSystem.Current.OpenAppPackageFileAsync("nodes.csv");
         using var streamReader = new StreamReader(fileStream);
@@ -48,13 +87,14 @@ public partial class MainPage : ContentPage
                 array1[i] = value;
             }
 
-            Crossroad bit = new Crossroad(Convert.ToInt64(array1[0]), Convert.ToDouble(array1[1]), Convert.ToDouble(array1[2]));
+            Junction junction = new Junction(Convert.ToInt64(array1[0]), Convert.ToDouble(array1[1]), Convert.ToDouble(array1[2]));
 
-            bristol.crossroadList.Add(bit);
+            Junctions.Add(Convert.ToInt64(array1[0]), junction);
+
+            graph.AddVertex(junction);
         }
 
         streamReader.Close();
-
 
         Stream fileStream2 = await FileSystem.Current.OpenAppPackageFileAsync("edges.csv");
         using var streamReader2 = new StreamReader(fileStream2);
@@ -73,56 +113,32 @@ public partial class MainPage : ContentPage
                 array1[i] = value2;
             }
 
-            Road bit = new Road(Convert.ToInt64(array1[1]), Convert.ToInt64(array1[2]), Convert.ToDouble(array1[3]), Convert.ToInt64(array1[0]), Convert.ToInt32(array1[7]), Convert.ToInt32(array1[8]));
+           
+                if (Convert.ToInt32(array1[7]) != 0)
+            {
+                Road road = new Road(Convert.ToDouble(array1[3]), Convert.ToInt64(array1[0]), Convert.ToInt32(array1[7]));
+                var edge = new TaggedEdge<Junction, Road>(Junctions[Convert.ToInt64(array1[1])], Junctions[Convert.ToInt64(array1[2])], road);
+                graph.AddEdge(edge);
+            }
+            if (Convert.ToInt32(array1[8]) != 0)
+            {
+                Road road = new Road(Convert.ToDouble(array1[3]), Convert.ToInt64(array1[0]), Convert.ToInt32(array1[8]));
 
-            bristol.roadList.Add(bit);
+                var edge = new TaggedEdge<Junction, Road>(Junctions[Convert.ToInt64(array1[2])], Junctions[Convert.ToInt64(array1[1])], road);
+                graph.AddEdge(edge);
+            }
+
+
         }
 
         streamReader2.Close();
+        graphs[0] = graph;
     }
 
-    class Crossroad
-    {
-        public Crossroad(long id, double latitude, double longitude)
-        {
-            this.id = id;
-            this.latitude = latitude;
-            this.longitude = longitude;
-        }
-
-        public long id;
-        public double latitude;
-        public double longitude;
-    }
-
-    class Road
-    {
-        public Road(long start, long end, double length, long roadPartOf, int bikeInfoForward, int bikeInfoBackward)
-        {
-            this.start = start;
-            this.end = end;
-            this.length = length;
-            this.roadPartOf = roadPartOf;
-        }
-
-        public long start;
-        public long end;
-        public long roadPartOf;
-        public double length;
-        bool isOneWay;
-        bool isCyclePath;
-    }
-
-    class RoadNetwork
-    {
-        public List<Crossroad> crossroadList = new List<Crossroad>();
-        public List<Road> roadList = new List<Road>();
-        public Crossroad currentCrossroad;
-    }
 
     private void OnBtnClicked(object sender, EventArgs e)
     {
-        if(startIndex != -1 & endIndex != -1)
+        if (startIndex != -1 & endIndex != -1)
         {
             GoBtn.Text = "Generating...";
             double startLat = coordStart[0, startIndex];
