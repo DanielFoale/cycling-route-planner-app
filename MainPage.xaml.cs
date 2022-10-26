@@ -152,18 +152,14 @@ public partial class MainPage : ContentPage
 
             SemanticScreenReader.Announce(GoBtn.Text);
 
-            PathFinder();
+            PathFinder(nearest_node(startLat, startLon), nearest_node(endLat, endLon));
         }
     }
 
-    public void PathFinder()
+    public void PathFinder(Junction start_node, Junction goal_node)
     {
         List<Junction> openList = new List<Junction>();
         List<Junction> closedList = new List<Junction>();
-
-        Junction goal_node = Junctions[7371478630];
-        
-        Junction start_node = Junctions[291583393];
 
         openList.Add(start_node);
 
@@ -249,6 +245,23 @@ public partial class MainPage : ContentPage
         }
         // failed
 
+    }
+
+    public Junction nearest_node(double lat, double lon)
+    {
+        double distanceToNode = -1;
+        Junction nearestNode = Junctions[291583393];
+        foreach(var node in graphs[0].Vertices)
+        {
+
+            if (distanceToNode == -1 || haversine(lat, lon, node.lat, node.longitude) < distanceToNode)
+            {
+                distanceToNode = haversine(lat, lon, node.lat, node.longitude);
+                nearestNode = node;
+            }
+        }
+
+        return nearestNode;
     }
 
     public double haversine(double lat1, double lon1, double lat2, double lon2)
