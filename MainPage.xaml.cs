@@ -12,6 +12,7 @@ using CsvHelper;
 using System.Formats.Asn1;
 using Google.Protobuf.WellKnownTypes;
 using System.IO;
+using NetTopologySuite.Triangulate;
 
 namespace CyclingRoutePlannerApp;
 
@@ -43,12 +44,12 @@ public partial class MainPage : ContentPage
         }
         public long roadPartOf;
         public double length;
-        bool isCyclePath;
+        public bool isCyclePath;
     }
 
     public class Junction
     {
-        public Junction(long id, double lat, double longitude)
+        public Junction(long id, double longitude, double lat)
         {
             this.id = id;
             this.lat = lat;
@@ -58,16 +59,19 @@ public partial class MainPage : ContentPage
         public long id;
         public double lat;
         public double longitude;
+        public double f = -1;
+        public double g = -1;
+        public double h = -1;
+        public Junction parent;
     }
 
     public AdjacencyGraph<Junction, TaggedEdge<Junction, Road>>[] graphs = new AdjacencyGraph<Junction, TaggedEdge<Junction, Road>>[1];
-
+    public IDictionary<long, Junction> Junctions = new Dictionary<long, Junction>();
 
     async void ParseMapData()
     {
 
 
-    IDictionary<long, Junction> Junctions = new Dictionary<long, Junction>();
     var graph = new AdjacencyGraph<Junction, TaggedEdge<Junction, Road>>();
 
         Stream fileStream = await FileSystem.Current.OpenAppPackageFileAsync("nodes.csv");
@@ -147,7 +151,122 @@ public partial class MainPage : ContentPage
             double endLon = coordEnd[1, endIndex];
 
             SemanticScreenReader.Announce(GoBtn.Text);
+
+            PathFinder();
         }
+    }
+
+    public void PathFinder()
+    {
+        List<Junction> openList = new List<Junction>();
+        List<Junction> closedList = new List<Junction>();
+
+        Junction goal_node = Junctions[7371478630];
+        
+        Junction start_node = Junctions[291583393];
+
+        openList.Add(start_node);
+
+        openList[0].g = 0;
+
+        openList[0].h = haversine(start_node.lat, start_node.longitude, goal_node.lat, goal_node.longitude); 
+            
+
+
+        openList[0].f = openList[0].h;
+
+        Junction currentNode = openList[0];
+
+        while (openList != null)
+        {
+            double lowestF = -1;
+            foreach (Junction junction in openList)
+            {
+                if (lowestF == -1 || junction.f < lowestF)
+                {
+                    lowestF = junction.f;
+                    currentNode = junction;
+                }
+            }
+            openList.Remove(currentNode);
+            closedList.Add(currentNode);
+    
+            if(currentNode == goal_node)
+            {
+                string k = "";
+                string p = "";
+                do
+                {
+                    k += currentNode.id;
+                    k += "\n";
+                    p += ($"[{currentNode.longitude},{currentNode.lat}],");
+                    currentNode = currentNode.parent;
+
+                } while (currentNode != start_node);
+                k += start_node.id;
+                p += ($"[{start_node.longitude},{start_node.lat}]");
+                break;
+            }
+            else
+            {
+                foreach (var edge in graphs[0].OutEdges(currentNode))
+                {
+                    
+                    double provisionalH = haversine(edge.Target.lat, edge.Target.longitude, goal_node.lat, goal_node.longitude);
+                    double provisionalG = currentNode.g + edge.Tag.length;
+                    double provisionalF = provisionalH + provisionalG;
+                    if (openList.Contains(edge.Target))
+                    {
+                        if(provisionalF < edge.Target.f)
+                        {
+                            edge.Target.g = provisionalG;
+                            edge.Target.f = provisionalF;
+                            edge.Target.parent = currentNode;
+                        }
+                    }
+                    else if (closedList.Contains(edge.Target))
+                    {
+                        if (provisionalF < edge.Target.f)
+                        {
+                            closedList.Remove(edge.Target);
+                            edge.Target.g = provisionalG;
+                            edge.Target.f = provisionalF;
+                            edge.Target.parent = currentNode;
+                            openList.Add(edge.Target);
+                        }
+                    }
+                    else
+                    {
+                        edge.Target.g = provisionalG;
+                        edge.Target.f = provisionalF;
+                        edge.Target.parent = currentNode;
+                        openList.Add(edge.Target);
+                    }
+                }
+            }
+
+            
+        }
+        // failed
+
+    }
+
+    public double haversine(double lat1, double lon1, double lat2, double lon2)
+    {
+        const double R = 6371e3; // metres
+        double φ1 = lat1 * Math.PI / 180; // φ, λ in radians
+        double φ2 = lat2 * Math.PI / 180;
+        double Δφ = (lat2 - lat1) * Math.PI / 180.0;
+        double Δλ = (lon2 - lon1) * Math.PI / 180.0;
+
+        double a = Math.Sin(Δφ / 2) * Math.Sin(Δφ / 2) +
+                  Math.Cos(φ1) * Math.Cos(φ2) *
+                  Math.Sin(Δλ / 2) * Math.Sin(Δλ / 2);
+        double c = 2 * Math.Atan2(Math.Sqrt(a), Math.Sqrt(1 - a));
+
+        double d = R * c; // in metres
+
+        return d;
     }
 
     public double[,] coordStart = new double[2, 20];
