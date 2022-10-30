@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net6.0-android;net6.0-ios;net6.0-maccatalyst</TargetFrameworks>
-		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net6.0-windows10.0.19041.0</TargetFrameworks>
+		<TargetFrameworks>net7.0-android;net7.0-ios;net7.0-maccatalyst</TargetFrameworks>
+		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net7.0-windows10.0.19041.0</TargetFrameworks>
 		<!-- Uncomment to also build the tizen app. You will need to install tizen by following this: https://github.com/Samsung/Tizen.NET -->
-		<!-- <TargetFrameworks>$(TargetFrameworks);net6.0-tizen</TargetFrameworks> -->
+		<!-- <TargetFrameworks>$(TargetFrameworks);net7.0-tizen</TargetFrameworks> -->
 		<OutputType>Exe</OutputType>
 		<RootNamespace>CyclingRoutePlannerApp</RootNamespace>
 		<UseMaui>true</UseMaui>
@@ -56,6 +56,7 @@
 	<ItemGroup>
 	  <PackageReference Include="CsvHelper" Version="28.0.1" />
 	  <PackageReference Include="Microsoft.Data.SqlClient" Version="5.0.0" />
+	  <PackageReference Include="Microsoft.Maui.Controls.Maps" Version="7.0.0-rc.2.6866" />
 	  <PackageReference Include="MySql.Data" Version="8.0.30" />
 	  <PackageReference Include="MySqlConnector" Version="2.1.12" />
 	  <PackageReference Include="NetTopologySuite.Core" Version="1.15.3" />
