@@ -13,6 +13,10 @@ using System.Formats.Asn1;
 using Google.Protobuf.WellKnownTypes;
 using System.IO;
 using NetTopologySuite.Triangulate;
+using Microsoft.Maui.Controls.Maps;
+using Microsoft.Maui.Maps;
+using System.Xml;
+using Microsoft.Maui.Graphics.Text;
 
 namespace CyclingRoutePlannerApp;
 
@@ -47,6 +51,18 @@ public partial class MainPage : ContentPage
         public bool isCyclePath;
     }
 
+    public class FinalPathNodes
+    {
+        public FinalPathNodes(double lat, double lon)
+        {
+            latitude = lat;
+            longitude = lon;
+        }
+
+        public double latitude;
+        public double longitude;
+    }
+
     public class Junction
     {
         public Junction(long id, double longitude, double lat)
@@ -63,7 +79,19 @@ public partial class MainPage : ContentPage
         public double g = -1;
         public double h = -1;
         public Junction parent;
+        public Road road;
     }
+
+    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+
+        var BristolLoc = new Location(51.4545, -2.5879);
+
+        MapSpan mapSpan = MapSpan.FromCenterAndRadius(BristolLoc, Distance.FromKilometers(3));
+        map.MoveToRegion(mapSpan);
+    }
+    
 
     public AdjacencyGraph<Junction, TaggedEdge<Junction, Road>>[] graphs = new AdjacencyGraph<Junction, TaggedEdge<Junction, Road>>[1];
     public IDictionary<long, Junction> Junctions = new Dictionary<long, Junction>();
@@ -152,6 +180,8 @@ public partial class MainPage : ContentPage
 
             SemanticScreenReader.Announce(GoBtn.Text);
 
+            map.MapElements.Clear();
+
             PathFinder(nearest_node(startLat, startLon), nearest_node(endLat, endLon));
         }
     }
@@ -160,6 +190,7 @@ public partial class MainPage : ContentPage
     {
         List<Junction> openList = new List<Junction>();
         List<Junction> closedList = new List<Junction>();
+        List<FinalPathNodes> parts = new List<FinalPathNodes>();
 
         openList.Add(start_node);
 
@@ -189,18 +220,129 @@ public partial class MainPage : ContentPage
     
             if(currentNode == goal_node)
             {
-                string k = "";
-                string p = "";
+                double totalDistance = 0;
                 do
                 {
-                    k += currentNode.id;
-                    k += "\n";
-                    p += ($"[{currentNode.longitude},{currentNode.lat}],");
-                    currentNode = currentNode.parent;
+                    Junction previousNode = currentNode.parent;
 
-                } while (currentNode != start_node);
-                k += start_node.id;
-                p += ($"[{start_node.longitude},{start_node.lat}]");
+                    Road f = currentNode.road;
+
+                    totalDistance += f.length;
+
+                    String URLString = $"https://www.openstreetmap.org/api/0.6/way/{f.roadPartOf}";
+
+                    XmlTextReader reader = new XmlTextReader(URLString);
+
+                    List<string> bits = new List<string>();
+
+                    while (reader.Read())
+                    {
+                        if (reader.NodeType == XmlNodeType.Element)
+                        {
+                            if (reader.Name == "nd")
+                            {
+                                reader.MoveToNextAttribute();
+                                bits.Add(reader.Value);
+                            }
+                        }
+                    }
+
+                    List<string> smallerbits = new List<string>();
+
+                    bool counting = false;
+
+                    foreach (string bit in bits)
+                    {
+                        if (bit == currentNode.id.ToString() || bit == previousNode.id.ToString())
+                        {
+                            if (counting == false)
+                                counting = true;
+                            else
+                            {
+                                counting = false;
+                                if (smallerbits.Contains(currentNode.id.ToString()))
+                                {
+                                    smallerbits.Add(previousNode.id.ToString());
+                                }
+                                else
+                                    smallerbits.Add(currentNode.id.ToString());
+                            }
+                        }
+
+                        if (counting)
+                        {
+                            smallerbits.Add(bit);
+                        }
+                    }
+
+                    if (smallerbits[0] == previousNode.id.ToString())
+                    {
+                        smallerbits.Reverse();
+                    }
+
+                    foreach (string smallbit in smallerbits)
+                    {
+                        double lat = -1;
+                        double lon = -1;
+                        String URLString2 = $"https://www.openstreetmap.org/api/0.6/node/{smallbit}";
+
+                        try
+                        {
+                            XmlTextReader reader2 = new XmlTextReader(URLString2);
+
+                            while (reader2.Read())
+                            {
+                                if (reader2.NodeType == XmlNodeType.Element)
+                                {
+                                    if (reader2.Name == "node")
+                                    {
+                                        while (reader2.Name != "lat")
+                                        {
+                                            reader2.MoveToNextAttribute();
+                                        }
+
+                                        lat = Convert.ToDouble(reader2.Value);
+                                        reader2.MoveToNextAttribute();
+                                        lon = Convert.ToDouble(reader2.Value);
+                                        break;
+                                    }
+                                }
+                            }
+                            FinalPathNodes m = new FinalPathNodes(lat, lon);
+                            parts.Add(m);
+                        }
+                        catch (Exception)
+                        {
+                            throw;
+                        }
+                        
+                    }
+
+                    currentNode = previousNode;
+
+                } while (currentNode.parent != null);
+
+                var mapLine = new Microsoft.Maui.Controls.Maps.Polyline
+                {
+                    StrokeWidth = 8,
+                    StrokeColor = Color.Parse("#1BA1E2")
+                };
+
+                foreach (FinalPathNodes item in parts)
+                {
+                    mapLine.Geopath.Add(new Location(item.latitude, item.longitude));
+                }
+
+                map.MapElements.Add(mapLine);
+                if(totalDistance < 1000)
+                {
+                    distance.Text = Convert.ToString(Math.Round(totalDistance)) + " metres";
+                }
+                else
+                {
+                    distance.Text = Convert.ToString(Math.Round((totalDistance/1000),1)) + " kilometres";
+                }
+                
                 break;
             }
             else
@@ -218,6 +360,7 @@ public partial class MainPage : ContentPage
                             edge.Target.g = provisionalG;
                             edge.Target.f = provisionalF;
                             edge.Target.parent = currentNode;
+                            edge.Target.road = edge.Tag;
                         }
                     }
                     else if (closedList.Contains(edge.Target))
@@ -228,6 +371,7 @@ public partial class MainPage : ContentPage
                             edge.Target.g = provisionalG;
                             edge.Target.f = provisionalF;
                             edge.Target.parent = currentNode;
+                            edge.Target.road = edge.Tag;
                             openList.Add(edge.Target);
                         }
                     }
@@ -236,6 +380,7 @@ public partial class MainPage : ContentPage
                         edge.Target.g = provisionalG;
                         edge.Target.f = provisionalF;
                         edge.Target.parent = currentNode;
+                        edge.Target.road = edge.Tag;
                         openList.Add(edge.Target);
                     }
                 }

@@ -4,7 +4,7 @@
              x:Class="CyclingRoutePlannerApp.MainPage"
              Title="New Route">
 
-    <ScrollView>
+    
         <VerticalStackLayout
             Spacing="25"
             Padding="30,30">
@@ -32,15 +32,19 @@
                 HorizontalOptions="Center"
                 FontSize="18"/>
 
-            <Label
-                x:Name="map"
-                Text="Map"
-                SemanticProperties.HeadingLevel="Level1"
-                FontSize="52"
-                HorizontalOptions="Center"/>
+            <Grid>
+                <Map x:Name="map" MinimumHeightRequest="300" IsScrollEnabled="True" IsZoomEnabled="True">
+                    <Map.MapElements>
+                        
+                    </Map.MapElements>
+                </Map>
+            </Grid>
+
+            <Label x:Name="distance" Text=""/>
+
 
 
         </VerticalStackLayout>
-    </ScrollView>
+    
 
 </ContentPage>
