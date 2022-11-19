@@ -6,11 +6,7 @@ namespace CyclingRoutePlannerApp;
 
 public partial class RegistrationPage : ContentPage
 {
-    public class MyObject
-    {
-        public string Username { get; set; }
-        public string Password { get; set; }
-    }
+    
 	public RegistrationPage()
 	{
 		InitializeComponent();
@@ -47,6 +43,7 @@ public partial class RegistrationPage : ContentPage
 
                     var response = await client.PostAsync("https://chirk-rhythm.000webhostapp.com/entry.php", content);
                     var responseString = await response.Content.ReadAsStringAsync();
+                    User.UserLoggedIn = usernameEntry.Text;
                     passwordEntry.Text = null;
                     usernameEntry.Text = null;
                     await Shell.Current.GoToAsync($"//{nameof(MainPage)}");

@@ -9,6 +9,7 @@ namespace CyclingRoutePlannerApp;
 
 public partial class LoginPage : ContentPage
 {
+
 	public LoginPage()
 	{
 		InitializeComponent();
@@ -31,10 +32,17 @@ public partial class LoginPage : ContentPage
                     if (item.GetValue("Username").ToString() == usernameEntry.Text)
                     {
                         usernameFound = true;
+                        User.UserLoggedIn = usernameEntry.Text;
                         if (item.GetValue("Password").ToString() == passwordEntry.Text)
                         {
                             usernameEntry.Text = null;
                             passwordEntry.Text = null;
+                            usernameEntry.IsVisible = false;
+                            passwordEntry.IsVisible = false;
+                            label.IsVisible = false;
+                            button.IsVisible = false;
+                            label2.IsVisible = true;
+                            label2.Focus();
                             await Shell.Current.GoToAsync($"//{nameof(MainPage)}");
                         }
                         else

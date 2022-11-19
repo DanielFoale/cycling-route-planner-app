@@ -6,17 +6,19 @@
     <VerticalStackLayout>
         <StackLayout Margin="30,15">
             <Label Text="How fast do you cycle?" FontSize="18"/>
-            <RadioButton Content="Slow" />
-            <RadioButton Content="Moderate" IsChecked="True"/>
-            <RadioButton Content="Fast" />
+            <RadioButton x:Name ="Slow" Content="Slow" />
+            <RadioButton x:Name ="Moderate" Content="Moderate"/>
+            <RadioButton x:Name ="Fast" Content="Fast" />
         </StackLayout>
-        <StackLayout Margin="30,15">
-            <Label Text="Avoid steep paths?" FontSize="18"/>
-            <RadioButton Content="As much as possible" />
-            <RadioButton Content="Within reason"/>
-            <RadioButton Content="Not if slower" IsChecked="True"/>
-        </StackLayout>
-
+        <HorizontalStackLayout>
+            <Label
+            Margin="30,15"
+            Text="Avoid steep paths?"
+            VerticalOptions="Center"    
+            HorizontalOptions="Start"
+            FontSize="18"/>
+            <Switch x:Name="AvoidSteepPaths"/>
+        </HorizontalStackLayout>
         <HorizontalStackLayout>
             <Label
             Margin="30,15"
@@ -24,7 +26,7 @@
             VerticalOptions="Center"    
             HorizontalOptions="Start"
             FontSize="18"/>
-            <Switch IsToggled="False"/>
+            <Switch x:Name="KeepToCycleLanes"/>
         </HorizontalStackLayout>
         <HorizontalStackLayout>
             <Label
@@ -33,8 +35,10 @@
             VerticalOptions="Center"    
             HorizontalOptions="Start"
             FontSize="18"/>
-            <Switch IsToggled="False"/>
+            <Switch x:Name="AvoidFastRoads"/>
         </HorizontalStackLayout>
+
+        <Button Margin="30,15" Text="Save" Clicked="Button_Clicked"/>
 
     </VerticalStackLayout>
 </ContentPage>

@@ -6,7 +6,7 @@
              Shell.FlyoutBehavior="Disabled">
 
     <VerticalStackLayout>
-        <Label Text="New to App? Register here" VerticalOptions="Center" HorizontalOptions="Start" TextColor="MediumPurple" FontSize="16" Margin="0,10">
+        <Label x:Name="label" Text="New to App? Register here" VerticalOptions="Center" HorizontalOptions="Start" TextColor="MediumPurple" FontSize="16" Margin="0,10">
 
             <Label.GestureRecognizers>
                 <TapGestureRecognizer Tapped="TapGestureRecongnizer_Tapped"/>
@@ -24,8 +24,10 @@
             HorizontalOptions="Fill"
             Text="Sign in"
              FontSize="18"
-            
+            x:Name="button"
             Clicked ="Button_Clicked"/>
+
+        <Label x:Name="label2" Text="Loading..." HorizontalOptions="Center" IsVisible="false" FontSize="16" Margin="0,10"/>
 
 
     </VerticalStackLayout>

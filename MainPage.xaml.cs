@@ -90,6 +90,67 @@ public partial class MainPage : ContentPage
 
         MapSpan mapSpan = MapSpan.FromCenterAndRadius(BristolLoc, Distance.FromKilometers(3));
         map.MoveToRegion(mapSpan);
+
+        try
+        {
+            var RetrievePreferences = new WebClient();
+            RetrievePreferences.Headers.Add("User-Agent", ".NET Application CycleThere");
+            string json = RetrievePreferences.DownloadString("https://chirk-rhythm.000webhostapp.com/");
+            var objects = JArray.Parse(json);
+            foreach (JObject item in objects)
+            {
+                if (item.GetValue("Username").ToString() == User.UserLoggedIn)
+                {
+                    switch (item.GetValue("Speed").ToString())
+                    {
+                        case "Fast":
+                            User.Speed = "Fast";
+                            break;
+                        case "Moderate":
+                            User.Speed = "Moderate";
+                            break;
+                        case "Slow":
+                            User.Speed = "Slow";
+                            break;
+                        default:
+                            break;
+                    }
+
+                    if (item.GetValue("AvoidSteepPaths").ToString() == "0")
+                    {
+                        User.AvoidSteepPaths = false;
+                    }
+                    else
+                    {
+                        User.AvoidSteepPaths = true;
+                    }
+
+                    if (item.GetValue("CycleLanes").ToString() == "0")
+                    {
+                        User.KeepToCycleLanes = false;
+                    }
+                    else
+                    {
+                        User.KeepToCycleLanes = true;
+                    }
+
+                    if (item.GetValue("AvoidFastRoads").ToString() == "0")
+                    {
+                        User.AvoidFastRoads = false;
+                    }
+                    else
+                    {
+                        User.AvoidFastRoads = true;
+                    }
+
+                    break;
+                }
+            }
+        }
+        catch (WebException)
+        {
+            DisplayAlert("Network error", "Please check your connection and try again.", "OK");
+        }
     }
     
 
@@ -172,13 +233,12 @@ public partial class MainPage : ContentPage
     {
         if (startIndex != -1 & endIndex != -1)
         {
-            GoBtn.Text = "Generating...";
+            
             double startLat = coordStart[0, startIndex];
             double startLon = coordStart[1, startIndex];
             double endLat = coordEnd[0, endIndex];
             double endLon = coordEnd[1, endIndex];
 
-            SemanticScreenReader.Announce(GoBtn.Text);
 
             map.MapElements.Clear();
 
@@ -334,15 +394,49 @@ public partial class MainPage : ContentPage
                 }
 
                 map.MapElements.Add(mapLine);
-                if(totalDistance < 1000)
+
+
+
+                var BristolLoc = new Location(((start_node.lat + goal_node.lat) / 2), ((start_node.longitude + goal_node.longitude) / 2));
+
+                double maxdistance = haversine(start_node.lat, start_node.longitude, goal_node.lat, goal_node.longitude);
+
+                MapSpan mapSpan = MapSpan.FromCenterAndRadius(BristolLoc, Distance.FromKilometers(maxdistance/2000+0.25));
+                map.MoveToRegion(mapSpan);
+
+                if (totalDistance < 1000)
                 {
-                    distance.Text = Convert.ToString(Math.Round(totalDistance)) + " metres";
+                    DistanceAndTime.Text = Convert.ToString(Math.Round(totalDistance)) + " metres     ";
                 }
                 else
                 {
-                    distance.Text = Convert.ToString(Math.Round((totalDistance/1000),1)) + " kilometres";
+                    DistanceAndTime.Text = Convert.ToString(Math.Round((totalDistance/1000),1)) + " kilometres     ";
                 }
-                
+
+                try
+                {
+                    double speed = 15;
+                    var RetrievePreferences = new WebClient();
+                    RetrievePreferences.Headers.Add("User-Agent", ".NET Application CycleThere");
+                    string json = RetrievePreferences.DownloadString("https://chirk-rhythm.000webhostapp.com/speed.php");
+                    var objects = JArray.Parse(json);
+                    foreach (JObject item in objects)
+                    {
+                        if (item.GetValue("SpeedDescription").ToString() == User.Speed)
+                        {
+                            speed = Convert.ToDouble(item.GetValue("SpeedNumber"));
+                            break;
+                        }
+                    }
+
+                    DistanceAndTime.Text += Math.Round((totalDistance / 1000 / speed * 60), 0) + " minutes";
+
+                }
+                catch (WebException)
+                {
+                    DisplayAlert("Network error", "Please check your connection and try again.", "OK");
+                }
+
                 break;
             }
             else

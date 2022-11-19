@@ -40,11 +40,11 @@
                 </Map>
             </Grid>
 
-            <Label x:Name="distance" Text=""/>
+            <Label x:Name="DistanceAndTime" Text=""/>
 
 
 
-        </VerticalStackLayout>
+    </VerticalStackLayout>
     
 
 </ContentPage>
