@@ -20,28 +20,57 @@
 
             <Entry x:Name="endPoint" Placeholder="Enter end point here" Completed="OnEnterEnd" BackgroundColor="DarkGray"/>
 
-            <Picker Title=""
+        <Picker Title=""
                 x:Name="endAddressesList"
                     SelectedIndexChanged="OnEndAddressPickerSelectedIndexChanged"
                     />
+        
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
 
-                <Button
+            <Button
+                Grid.Column="0"
                 x:Name="GoBtn"
                 Text="Generate Route"
-                Clicked="OnBtnClicked"
+                Clicked="OnNewRouteBtnClicked"
                 HorizontalOptions="Center"
                 FontSize="18"/>
 
-            <Grid>
-                <Map x:Name="map" MinimumHeightRequest="300" IsScrollEnabled="True" IsZoomEnabled="True">
-                    <Map.MapElements>
-                        
-                    </Map.MapElements>
-                </Map>
-            </Grid>
+            <Button Grid.Column="1"
+               Text="Save Route"
+               FontSize="18"
+               x:Name="SaveRoute"
+               Clicked="OnSaveRouteBtnClicked"
+               HorizontalOptions="Center"
+               VerticalOptions="Center" />
+            
+        </Grid>
+        <Grid>
+            <Map x:Name="map" MinimumHeightRequest="300" IsScrollEnabled="True" IsZoomEnabled="True">
+                <Map.MapElements>
 
-            <Label x:Name="DistanceAndTime" Text=""/>
+                </Map.MapElements>
+            </Map>
+        </Grid>
 
+
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Label Grid.Column="0" x:Name="DistanceDisplay" Text="" HorizontalOptions="Center"/>
+            <Label Grid.Column="1" x:Name="TimeDisplay" Text="" HorizontalOptions="Center"/>
+        </Grid>
 
 
     </VerticalStackLayout>

@@ -229,7 +229,7 @@ public partial class MainPage : ContentPage
     }
 
 
-    private void OnBtnClicked(object sender, EventArgs e)
+    private void OnNewRouteBtnClicked(object sender, EventArgs e)
     {
         if (startIndex != -1 & endIndex != -1)
         {
@@ -246,7 +246,42 @@ public partial class MainPage : ContentPage
         }
     }
 
-    public void PathFinder(Junction start_node, Junction goal_node)
+    public static string routeAsString;
+
+    private static readonly HttpClient client = new HttpClient();
+
+    private async void OnSaveRouteBtnClicked(object sender, EventArgs e)
+    {
+        if (routeAsString!=null)
+        {
+            try
+            {
+                string label = await DisplayPromptAsync("Route Name", "Enter here");
+
+                var values = new Dictionary<string, string>
+                {
+                    { "Username", User.UserLoggedIn },
+                    { "Label", label },
+                    { "Linestring", routeAsString }
+                };
+
+                var content = new FormUrlEncodedContent(values);
+
+                var response = await client.PostAsync("https://chirk-rhythm.000webhostapp.com/routeentry.php", content);
+                var responseString = await response.Content.ReadAsStringAsync();
+            }
+            catch (WebException)
+            {
+                await DisplayAlert("Network error", "Please check your connection and try again.", "OK");
+            }
+        }
+        else
+        {
+            await DisplayAlert("Error", "Generate a route first.", "OK");
+        }
+    }
+
+        public void PathFinder(Junction start_node, Junction goal_node)
     {
         List<Junction> openList = new List<Junction>();
         List<Junction> closedList = new List<Junction>();
@@ -388,10 +423,14 @@ public partial class MainPage : ContentPage
                     StrokeColor = Color.Parse("#1BA1E2")
                 };
 
+                routeAsString = "";
+
                 foreach (FinalPathNodes item in parts)
                 {
+                    routeAsString += (item.longitude.ToString()+" "+item.latitude.ToString()+",");
                     mapLine.Geopath.Add(new Location(item.latitude, item.longitude));
                 }
+                routeAsString = routeAsString.Remove(routeAsString.Length-1);
 
                 map.MapElements.Add(mapLine);
 
@@ -406,11 +445,11 @@ public partial class MainPage : ContentPage
 
                 if (totalDistance < 1000)
                 {
-                    DistanceAndTime.Text = Convert.ToString(Math.Round(totalDistance)) + " metres     ";
+                    DistanceDisplay.Text = Convert.ToString(Math.Round(totalDistance)) + " metres     ";
                 }
                 else
                 {
-                    DistanceAndTime.Text = Convert.ToString(Math.Round((totalDistance/1000),1)) + " kilometres     ";
+                    DistanceDisplay.Text = Convert.ToString(Math.Round((totalDistance/1000),1)) + " kilometres     ";
                 }
 
                 try
@@ -429,7 +468,7 @@ public partial class MainPage : ContentPage
                         }
                     }
 
-                    DistanceAndTime.Text += Math.Round((totalDistance / 1000 / speed * 60), 0) + " minutes";
+                    TimeDisplay.Text = Math.Round((totalDistance / 1000 / speed * 60), 0) + " minutes";
 
                 }
                 catch (WebException)
