@@ -5,19 +5,37 @@
              Title="Saved Routes">
     <VerticalStackLayout Padding="30,0">
         <Label 
+            x:Name="RouteName1"
             Text="Home to Work"
             VerticalOptions="Center" 
             HorizontalOptions="Start"
-            Margin="0,10"/>
+            Margin="0,10"
+            IsVisible="False"/>
+        <Grid>
+            <Map x:Name="map1" MinimumHeightRequest="150" IsScrollEnabled="False" IsZoomEnabled="False" IsVisible="False"/>
+        </Grid>
+        
         <Label 
+            x:Name="RouteName2"
             Text="Work to Home"
             VerticalOptions="Center" 
             HorizontalOptions="Start"
-            Margin="0,10"/>
+            Margin="0,10"
+            IsVisible="False"/>
+        <Grid>
+            <Map x:Name="map2" MinimumHeightRequest="150" IsScrollEnabled="False" IsZoomEnabled="False" IsVisible="False"/>
+        </Grid>
+        
         <Label 
-            Text="Home to Shops"
+            x:Name ="RouteName3"
+            Text="Route Name1"
             VerticalOptions="Center" 
             HorizontalOptions="Start"
-            Margin="0,10"/>
+            Margin="0,10"
+            IsVisible="False"/>
+        <Grid>
+            <Map x:Name="map3" MinimumHeightRequest="150" IsScrollEnabled="False" IsZoomEnabled="False" IsVisible="False"/>
+        </Grid>
+        
     </VerticalStackLayout>
 </ContentPage>
