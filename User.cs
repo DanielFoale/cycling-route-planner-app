@@ -10,8 +10,7 @@ namespace CyclingRoutePlannerApp
     {
         public static string UserLoggedIn;
         public static string Speed;
-        public static bool AvoidSteepPaths;
-        public static bool KeepToCycleLanes;
+        public static bool KeepToCycleTracks;
         public static bool AvoidFastRoads;
     }
 }

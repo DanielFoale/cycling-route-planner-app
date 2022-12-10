@@ -13,20 +13,11 @@
         <HorizontalStackLayout>
             <Label
             Margin="30,15"
-            Text="Avoid steep paths?"
+            Text="Keep to cycle tracks?"
             VerticalOptions="Center"    
             HorizontalOptions="Start"
             FontSize="18"/>
-            <Switch x:Name="AvoidSteepPaths"/>
-        </HorizontalStackLayout>
-        <HorizontalStackLayout>
-            <Label
-            Margin="30,15"
-            Text="Keep to cycle lanes?"
-            VerticalOptions="Center"    
-            HorizontalOptions="Start"
-            FontSize="18"/>
-            <Switch x:Name="KeepToCycleLanes"/>
+            <Switch x:Name="KeepToCycleTracks"/>
         </HorizontalStackLayout>
         <HorizontalStackLayout>
             <Label

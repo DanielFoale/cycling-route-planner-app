@@ -1,4 +1,4 @@
-using MySql.Data.MySqlClient;
+
 using Newtonsoft.Json.Linq;
 using System.Net;
 
@@ -46,6 +46,15 @@ public partial class RegistrationPage : ContentPage
                     User.UserLoggedIn = usernameEntry.Text;
                     passwordEntry.Text = null;
                     usernameEntry.Text = null;
+                    usernameEntry.IsVisible = false;
+                    passwordEntry.IsVisible = false;
+                    accountDetails.IsVisible = false;
+                    setUsername.IsVisible = false;
+                    setPassword.IsVisible = false;
+                    create.IsVisible = false;
+                    already.IsVisible = false;
+                    label2.IsVisible = true;
+                    label2.Focus();
                     await Shell.Current.GoToAsync($"//{nameof(MainPage)}");
                 }
                 catch (WebException)

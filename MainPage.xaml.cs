@@ -1,26 +1,11 @@
-﻿using Microsoft.Maui;
-using Newtonsoft.Json.Linq;
+﻿using Newtonsoft.Json.Linq;
 using QuikGraph;
-using QuikGraph.Algorithms;
-using QuikGraph.Algorithms.ShortestPath;
-using QuikGraph.Collections;
-using System.Diagnostics.Metrics;
-using System.Linq;
 using System.Net;
 using System.Globalization;
 using CsvHelper;
-using System.Formats.Asn1;
-using Google.Protobuf.WellKnownTypes;
-using System.IO;
-using NetTopologySuite.Triangulate;
-using Microsoft.Maui.Controls.Maps;
 using Microsoft.Maui.Maps;
-using System.Xml;
-using Microsoft.Maui.Graphics.Text;
 
 namespace CyclingRoutePlannerApp;
-
-
 
 public partial class MainPage : ContentPage
 {
@@ -30,25 +15,40 @@ public partial class MainPage : ContentPage
     {
         InitializeComponent();
         ParseMapData();
+        
     }
     public class Road
     {
-        public Road(double length, long roadPartOf, int bikeStatus)
+        public Road(double length, long roadPartOf, int bikeStatus, string speed, string linestring, bool forward)
         {
             this.length = length;
             this.roadPartOf = roadPartOf;
-            if (bikeStatus != 2)
+            this.linestring = linestring;
+            this.forward = forward;
+            if (bikeStatus == 5)
             {
-                isCyclePath = true;
+                isCycleTrack = true;
             }
             else
             {
-                isCyclePath = false;
+                isCycleTrack = false;
+            }
+
+            if(speed == "30 mph" || speed == "40 mph" || speed == "50 mph" || speed == "60 mph" || speed == "70 mph")
+            {
+                fastSpeed = true;
+            }
+            else
+            {
+                fastSpeed = false;
             }
         }
+        public bool forward;
         public long roadPartOf;
         public double length;
-        public bool isCyclePath;
+        public bool isCycleTrack;
+        public bool fastSpeed;
+        public string linestring;
     }
 
     public class FinalPathNodes
@@ -85,7 +85,13 @@ public partial class MainPage : ContentPage
     protected override void OnNavigatedTo(NavigatedToEventArgs args)
     {
         base.OnNavigatedTo(args);
-
+        startPoint.Text = "";
+        startAddressesList.ItemsSource = new List<string>();
+        endAddressesList.ItemsSource = new List<string>();
+        endPoint.Text = "";
+        DistanceDisplay.Text = "";
+        TimeDisplay.Text = "";
+        map.MapElements.Clear();
         var BristolLoc = new Location(51.4545, -2.5879);
 
         MapSpan mapSpan = MapSpan.FromCenterAndRadius(BristolLoc, Distance.FromKilometers(3));
@@ -116,22 +122,14 @@ public partial class MainPage : ContentPage
                             break;
                     }
 
-                    if (item.GetValue("AvoidSteepPaths").ToString() == "0")
-                    {
-                        User.AvoidSteepPaths = false;
-                    }
-                    else
-                    {
-                        User.AvoidSteepPaths = true;
-                    }
 
-                    if (item.GetValue("CycleLanes").ToString() == "0")
+                    if (item.GetValue("KeepToCycleTracks").ToString() == "0")
                     {
-                        User.KeepToCycleLanes = false;
+                        User.KeepToCycleTracks = false;
                     }
                     else
                     {
-                        User.KeepToCycleLanes = true;
+                        User.KeepToCycleTracks = true;
                     }
 
                     if (item.GetValue("AvoidFastRoads").ToString() == "0")
@@ -199,7 +197,7 @@ public partial class MainPage : ContentPage
 
         while (csvReader2.Read())
         {
-            string[] array1 = new string[10];
+            string[] array1 = new string[11];
 
             for (int i = 0; csvReader2.TryGetField<string>(i, out value2); i++)
             {
@@ -209,13 +207,13 @@ public partial class MainPage : ContentPage
            
                 if (Convert.ToInt32(array1[7]) != 0)
             {
-                Road road = new Road(Convert.ToDouble(array1[3]), Convert.ToInt64(array1[0]), Convert.ToInt32(array1[7]));
+                Road road = new Road(Convert.ToDouble(array1[3]), Convert.ToInt64(array1[0]), Convert.ToInt32(array1[7]), array1[10], array1[9], true);
                 var edge = new TaggedEdge<Junction, Road>(Junctions[Convert.ToInt64(array1[1])], Junctions[Convert.ToInt64(array1[2])], road);
                 graph.AddEdge(edge);
             }
             if (Convert.ToInt32(array1[8]) != 0)
             {
-                Road road = new Road(Convert.ToDouble(array1[3]), Convert.ToInt64(array1[0]), Convert.ToInt32(array1[8]));
+                Road road = new Road(Convert.ToDouble(array1[3]), Convert.ToInt64(array1[0]), Convert.ToInt32(array1[8]), array1[10], array1[9], false);
 
                 var edge = new TaggedEdge<Junction, Road>(Junctions[Convert.ToInt64(array1[2])], Junctions[Convert.ToInt64(array1[1])], road);
                 graph.AddEdge(edge);
@@ -318,99 +316,34 @@ public partial class MainPage : ContentPage
                 double totalDistance = 0;
                 do
                 {
+                    
                     Junction previousNode = currentNode.parent;
 
                     Road f = currentNode.road;
-
                     totalDistance += f.length;
 
-                    String URLString = $"https://www.openstreetmap.org/api/0.6/way/{f.roadPartOf}";
-
-                    XmlTextReader reader = new XmlTextReader(URLString);
-
-                    List<string> bits = new List<string>();
-
-                    while (reader.Read())
+                    string k = f.linestring.Remove(0, 11);
+                    k = k.Remove(k.Length - 1);
+                    k = k.Replace(", ", ",");
+                    string[] coords = k.Split(',');
+                    if (f.forward)
                     {
-                        if (reader.NodeType == XmlNodeType.Element)
+                        for (int i = (coords.Length-1); i > -1; i--)
                         {
-                            if (reader.Name == "nd")
-                            {
-                                reader.MoveToNextAttribute();
-                                bits.Add(reader.Value);
-                            }
-                        }
-                    }
-
-                    List<string> smallerbits = new List<string>();
-
-                    bool counting = false;
-
-                    foreach (string bit in bits)
-                    {
-                        if (bit == currentNode.id.ToString() || bit == previousNode.id.ToString())
-                        {
-                            if (counting == false)
-                                counting = true;
-                            else
-                            {
-                                counting = false;
-                                if (smallerbits.Contains(currentNode.id.ToString()))
-                                {
-                                    smallerbits.Add(previousNode.id.ToString());
-                                }
-                                else
-                                    smallerbits.Add(currentNode.id.ToString());
-                            }
-                        }
-
-                        if (counting)
-                        {
-                            smallerbits.Add(bit);
-                        }
-                    }
-
-                    if (smallerbits[0] == previousNode.id.ToString())
-                    {
-                        smallerbits.Reverse();
-                    }
-
-                    foreach (string smallbit in smallerbits)
-                    {
-                        double lat = -1;
-                        double lon = -1;
-                        String URLString2 = $"https://www.openstreetmap.org/api/0.6/node/{smallbit}";
-
-                        try
-                        {
-                            XmlTextReader reader2 = new XmlTextReader(URLString2);
-
-                            while (reader2.Read())
-                            {
-                                if (reader2.NodeType == XmlNodeType.Element)
-                                {
-                                    if (reader2.Name == "node")
-                                    {
-                                        while (reader2.Name != "lat")
-                                        {
-                                            reader2.MoveToNextAttribute();
-                                        }
-
-                                        lat = Convert.ToDouble(reader2.Value);
-                                        reader2.MoveToNextAttribute();
-                                        lon = Convert.ToDouble(reader2.Value);
-                                        break;
-                                    }
-                                }
-                            }
-                            FinalPathNodes m = new FinalPathNodes(lat, lon);
+                            string[] final = coords[i].Split(' ');
+                            FinalPathNodes m = new FinalPathNodes(Convert.ToDouble(final[1]), Convert.ToDouble(final[0]));
                             parts.Add(m);
                         }
-                        catch (Exception)
+                    }
+                    else
+                    {
+
+                        foreach (string coord in coords)
                         {
-                            throw;
+                            string[] final = coord.Split(' ');
+                            FinalPathNodes m = new FinalPathNodes(Convert.ToDouble(final[1]), Convert.ToDouble(final[0]));
+                            parts.Add(m);
                         }
-                        
                     }
 
                     currentNode = previousNode;
@@ -433,8 +366,6 @@ public partial class MainPage : ContentPage
                 routeAsString = routeAsString.Remove(routeAsString.Length-1);
 
                 map.MapElements.Add(mapLine);
-
-
 
                 var BristolLoc = new Location(((start_node.lat + goal_node.lat) / 2), ((start_node.longitude + goal_node.longitude) / 2));
 
@@ -482,9 +413,18 @@ public partial class MainPage : ContentPage
             {
                 foreach (var edge in graphs[0].OutEdges(currentNode))
                 {
-                    
+                    double cycletrackmultiplier = 1;
+                    double roadspeedmultiplier = 1;
+                    if (User.KeepToCycleTracks == true & edge.Tag.isCycleTrack == false)
+                    {
+                        cycletrackmultiplier = 3;
+                    }
+                    if (User.AvoidFastRoads == true & edge.Tag.fastSpeed == true)
+                    {
+                        roadspeedmultiplier = 10;
+                    }
                     double provisionalH = haversine(edge.Target.lat, edge.Target.longitude, goal_node.lat, goal_node.longitude);
-                    double provisionalG = currentNode.g + edge.Tag.length;
+                    double provisionalG = currentNode.g + Math.Max(cycletrackmultiplier,roadspeedmultiplier) * (edge.Tag.length);
                     double provisionalF = provisionalH + provisionalG;
                     if (openList.Contains(edge.Target))
                     {
@@ -564,7 +504,7 @@ public partial class MainPage : ContentPage
 
     public double[,] coordEnd = new double[2, 20];
 
-    private async void OnEnterStart(object sender, EventArgs e)
+    private void OnEnterStart(object sender, EventArgs e)
     {
         try
         {
@@ -636,7 +576,7 @@ public partial class MainPage : ContentPage
         endIndex = selectedIndex;
     }
 
-    private async void OnEnterEnd(object sender, EventArgs e)
+    private void OnEnterEnd(object sender, EventArgs e)
     {
         try
         {
@@ -684,7 +624,7 @@ public partial class MainPage : ContentPage
             DisplayAlert("Network error", "Please check your connection and try again.", "OK");
         }
     }
-
+    
 
 }
 

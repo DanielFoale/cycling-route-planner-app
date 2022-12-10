@@ -44,26 +44,16 @@ public partial class PreferencesPage : ContentPage
                             break;
                     }
 
-                    if (item.GetValue("AvoidSteepPaths").ToString() == "0")
-                    {
-                        User.AvoidSteepPaths = false;
-                        AvoidSteepPaths.IsToggled = false;
-                    }
-                    else
-                    {
-                        User.AvoidSteepPaths = true;
-                        AvoidSteepPaths.IsToggled = true;
-                    }
 
-                    if (item.GetValue("CycleLanes").ToString() == "0")
+                    if (item.GetValue("KeepToCycleTracks").ToString() == "0")
                     {
-                        User.KeepToCycleLanes = false;
-                        KeepToCycleLanes.IsToggled = false;
+                        User.KeepToCycleTracks = false;
+                        KeepToCycleTracks.IsToggled = false;
                     }
                     else
                     {
-                        User.KeepToCycleLanes = true;
-                        KeepToCycleLanes.IsToggled = true;
+                        User.KeepToCycleTracks = true;
+                        KeepToCycleTracks.IsToggled = true;
                     }
 
                     if (item.GetValue("AvoidFastRoads").ToString() == "0")
@@ -92,8 +82,7 @@ public partial class PreferencesPage : ContentPage
     private async void Button_Clicked(object sender, EventArgs e)
     {
         string Speed;
-        string AvoidSteepPathsString;
-        string CycleLanesString;
+        string KeepToCycleTracksString;
         string AvoidFastRoadsString;
 
         if(Fast.IsChecked == true)
@@ -112,26 +101,15 @@ public partial class PreferencesPage : ContentPage
             Speed = "Slow";
         }
 
-        if(AvoidSteepPaths.IsToggled == true)
+        if (KeepToCycleTracks.IsToggled == true)
         {
-            User.AvoidSteepPaths = true;
-            AvoidSteepPathsString = "1";
+            User.KeepToCycleTracks = true;
+            KeepToCycleTracksString = "1";
         }
         else
         {
-            User.AvoidSteepPaths = false;
-            AvoidSteepPathsString = "0";
-        }
-
-        if (KeepToCycleLanes.IsToggled == true)
-        {
-            User.KeepToCycleLanes = true;
-            CycleLanesString = "1";
-        }
-        else
-        {
-            User.KeepToCycleLanes = false;
-            CycleLanesString = "0";
+            User.KeepToCycleTracks = false;
+            KeepToCycleTracksString = "0";
         }
 
         if (AvoidFastRoads.IsToggled == true)
@@ -151,8 +129,7 @@ public partial class PreferencesPage : ContentPage
                 {
                     { "Username", User.UserLoggedIn },
                     { "Speed",  Speed},
-                    { "AvoidSteepPaths", AvoidSteepPathsString },
-                    { "CycleLanes", CycleLanesString },
+                    { "KeepToCycleTracks", KeepToCycleTracksString },
                     { "AvoidFastRoads", AvoidFastRoadsString }
 
                 };

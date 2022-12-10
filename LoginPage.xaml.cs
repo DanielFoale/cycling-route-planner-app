@@ -91,4 +91,14 @@ public partial class LoginPage : ContentPage
             return false;
         }
     }
-}
+
+    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+        usernameEntry.IsVisible = true;
+        passwordEntry.IsVisible = true;
+        label.IsVisible = true;
+        button.IsVisible = true;
+        label2.IsVisible = false;
+    }
+    }

@@ -8,28 +8,31 @@
 
 <VerticalStackLayout>
 
-        <Label Text="Account details" FontSize="18"></Label>
-        <Label Text="Set username" Margin="0,10"></Label>
+        <Label x:Name="accountDetails" Text="Account details" FontSize="18"></Label>
+        <Label x:Name="setUsername" Text="Set username" Margin="0,10"></Label>
 
         <Entry x:Name="usernameEntry" BackgroundColor="DarkGray" Margin="0,10"/>
 
-        <Label Text="Set password" Margin="0,10"></Label>
+        <Label x:Name="setPassword" Text="Set password" Margin="0,10"></Label>
         <Entry x:Name="passwordEntry" BackgroundColor="DarkGray"  IsPassword="True" Margin="0,10"/>
         <Label x:Name="passwordComplexity" TextColor="Red"></Label>
         <Button 
+            x:Name="create"
             VerticalOptions="Center"
             HorizontalOptions="Fill"
             Text="Create account"
             Clicked ="Button_Clicked"
             FontSize="18"/>
 
-        <Label Text="Already have an account? Sign in here" VerticalOptions="Center" HorizontalOptions="Start" TextColor="MediumPurple" FontSize="16" Margin="10,10">
+        <Label x:Name="already" Text="Already have an account? Sign in here" VerticalOptions="Center" HorizontalOptions="Start" TextColor="MediumPurple" FontSize="16" Margin="10,10">
 
         <Label.GestureRecognizers>
             <TapGestureRecognizer Tapped="Label_Clicked"/>
         </Label.GestureRecognizers>
     </Label>
 
-</VerticalStackLayout>
+        <Label x:Name="label2" Text="Loading..." HorizontalOptions="Center" IsVisible="false" FontSize="16" Margin="0,10"/>
+
+    </VerticalStackLayout>
 
 </ContentPage>
