@@ -29,7 +29,7 @@
             <Switch x:Name="AvoidFastRoads"/>
         </HorizontalStackLayout>
 
-        <Button Margin="30,15" Text="Save" Clicked="Button_Clicked"/>
+        <Button Margin="30,15" Text="Save" Clicked="SaveButton_Clicked"/>
 
     </VerticalStackLayout>
 </ContentPage>

@@ -1,6 +1,6 @@
-
 using Newtonsoft.Json.Linq;
 using System.Net;
+using System.Security.Cryptography;
 
 namespace CyclingRoutePlannerApp;
 
@@ -11,8 +11,23 @@ public partial class RegistrationPage : ContentPage
 	{
 		InitializeComponent();
 	}
-
-    private async void Label_Clicked(object sender, EventArgs e)
+    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+        passwordEntry.Text = null;
+        usernameEntry.Text = null;
+        usernameEntry.IsVisible = true;
+        passwordEntry.IsVisible = true;
+        accountDetails.IsVisible = true;
+        setUsername.IsVisible = true;
+        setPassword.IsVisible = true;
+        create.IsVisible = true;
+        already.IsVisible = true;
+        label2.IsVisible = false;
+        passwordComplexity.Text = null;
+    }
+    
+    private async void LoginLabel_Clicked(object sender, EventArgs e)
     {
         passwordEntry.Text = null;
         usernameEntry.Text = null;
@@ -21,27 +36,32 @@ public partial class RegistrationPage : ContentPage
     }
 
 
-    private static readonly HttpClient client = new HttpClient();
+    private static readonly HttpClient httpClient = new HttpClient();
 
 
-    private async void Button_Clicked(object sender, EventArgs e)
+    private async void RegisterButton_Clicked(object sender, EventArgs e)
     {
         passwordComplexity.Text = null;
         if (UsernameValid() & ComplexEnough())
         {
+            
             if(!AlreadyUser())
             {
+
+                SHA hashing = new SHA();
+                string hashedPass =  hashing.SHA256_hashing(passwordEntry.Text);
+
                 try
                 {
                     var values = new Dictionary<string, string>
                 {
                     { "Username", usernameEntry.Text },
-                    { "Password", passwordEntry.Text }
+                    { "Password", hashedPass }
                 };
 
                     var content = new FormUrlEncodedContent(values);
 
-                    var response = await client.PostAsync("https://chirk-rhythm.000webhostapp.com/entry.php", content);
+                    var response = await httpClient.PostAsync("https://chirk-rhythm.000webhostapp.com/entry.php", content);
                     var responseString = await response.Content.ReadAsStringAsync();
                     User.UserLoggedIn = usernameEntry.Text;
                     passwordEntry.Text = null;
@@ -163,5 +183,7 @@ public partial class RegistrationPage : ContentPage
             return true;
         }
     }
-        
+
+
+
 }
