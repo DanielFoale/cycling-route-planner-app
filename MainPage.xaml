@@ -9,7 +9,7 @@
             Spacing="25"
             Padding="30,30">
 
-            <Entry x:Name="startPoint" Placeholder="Enter start point here" Completed="OnEnterStart" BackgroundColor="DarkGray" />
+            <Entry x:Name="startPoint" Placeholder="Enter start point here then press enter" Completed="OnEnterStart" BackgroundColor="DarkGray" />
 
             <Picker Title=""
                 x:Name="startAddressesList"
@@ -18,7 +18,7 @@
 
 
 
-            <Entry x:Name="endPoint" Placeholder="Enter end point here" Completed="OnEnterEnd" BackgroundColor="DarkGray"/>
+            <Entry x:Name="endPoint" Placeholder="Enter end point here then press enter" Completed="OnEnterEnd" BackgroundColor="DarkGray"/>
 
         <Picker Title=""
                 x:Name="endAddressesList"

@@ -9,8 +9,6 @@ namespace CyclingRoutePlannerApp;
 
 public partial class MainPage : ContentPage
 {
-
-
     public MainPage()
     {
         InitializeComponent();
@@ -19,10 +17,9 @@ public partial class MainPage : ContentPage
     }
     public class Road
     {
-        public Road(double length, long roadPartOf, int bikeStatus, string speed, string linestring, bool forward)
+        public Road(double length, int bikeStatus, string speed, string linestring, bool forward)
         {
             this.length = length;
-            this.roadPartOf = roadPartOf;
             this.linestring = linestring;
             this.forward = forward;
             if (bikeStatus == 5)
@@ -43,48 +40,110 @@ public partial class MainPage : ContentPage
                 fastSpeed = false;
             }
         }
-        public bool forward;
-        public long roadPartOf;
-        public double length;
-        public bool isCycleTrack;
-        public bool fastSpeed;
-        public string linestring;
-    }
+        private bool forward;
+        private bool isCycleTrack;
+        private bool fastSpeed;
+        private double length;
+        private string linestring;
 
-    public class FinalPathNodes
-    {
-        public FinalPathNodes(double lat, double lon)
+        public bool getIsForward()
         {
-            latitude = lat;
-            longitude = lon;
+            return forward;
         }
 
-        public double latitude;
-        public double longitude;
+        public bool getIsCycleTrack()
+        {
+            return isCycleTrack;
+        }
+        public bool getIsFastSpeed()
+        {
+            return fastSpeed;
+        }
+        public double getLength()
+        {
+            return length;
+        }
+
+        public string getLinestring()
+        {
+            return linestring;
+        }
     }
 
-    public class Junction
+    public class Node
     {
-        public Junction(long id, double longitude, double lat)
+        public Node(double lat, double lon)
         {
-            this.id = id;
             this.lat = lat;
-            this.longitude = longitude;
+            this.lon = lon;
         }
 
-        public long id;
-        public double lat;
-        public double longitude;
-        public double f = -1;
-        public double g = -1;
-        public double h = -1;
-        public Junction parent;
-        public Road road;
+        private double lat;
+        private double lon;
+
+        public double getLat()
+        {
+            return lat;
+        }
+
+        public double getLon()
+        {
+            return lon;
+        }
+    }
+
+    public class Junction : Node
+    {
+        public Junction(double lon, double lat)
+            :base(lat, lon)
+        {
+            
+            g = 0;
+            f = -1;
+        }
+        private double g;
+        private double f;
+        private Junction parent;
+        private Road road;
+
+        public double getF()
+        {
+            return f;
+        }
+
+        public double getG()
+        {
+            return g;
+        }
+        public Road getRoad()
+        {
+            return road;
+        }
+
+        public Junction getParent()
+        {
+            return parent;
+        }
+
+        public void setF(double f)
+        {
+            this.f = f;
+        }
+
+        public void switchPath(double g, double f, Junction parent, Road road)
+        {
+            this.g = g;
+            this.f = f;
+            this.parent = parent;
+            this.road = road;
+
+        }
     }
 
     protected override void OnNavigatedTo(NavigatedToEventArgs args)
     {
         base.OnNavigatedTo(args);
+        routeAsString = null;
         startPoint.Text = "";
         startAddressesList.ItemsSource = new List<string>();
         endAddressesList.ItemsSource = new List<string>();
@@ -107,21 +166,9 @@ public partial class MainPage : ContentPage
             {
                 if (item.GetValue("Username").ToString() == User.UserLoggedIn)
                 {
-                    switch (item.GetValue("Speed").ToString())
-                    {
-                        case "Fast":
-                            User.Speed = "Fast";
-                            break;
-                        case "Moderate":
-                            User.Speed = "Moderate";
-                            break;
-                        case "Slow":
-                            User.Speed = "Slow";
-                            break;
-                        default:
-                            break;
-                    }
+                    User.Speed = item.GetValue("Speed").ToString();
 
+                    User.SpeedNumber = Convert.ToDouble(item.GetValue("SpeedNumber").ToString());
 
                     if (item.GetValue("KeepToCycleTracks").ToString() == "0")
                     {
@@ -152,10 +199,10 @@ public partial class MainPage : ContentPage
     }
     
 
-    public AdjacencyGraph<Junction, TaggedEdge<Junction, Road>>[] graphs = new AdjacencyGraph<Junction, TaggedEdge<Junction, Road>>[1];
-    public IDictionary<long, Junction> Junctions = new Dictionary<long, Junction>();
+    private AdjacencyGraph<Junction, TaggedEdge<Junction, Road>>[] graphs = new AdjacencyGraph<Junction, TaggedEdge<Junction, Road>>[1];
+    private IDictionary<long, Junction> Junctions = new Dictionary<long, Junction>();
 
-    async void ParseMapData()
+    async protected void ParseMapData()
     {
 
 
@@ -178,7 +225,7 @@ public partial class MainPage : ContentPage
                 array1[i] = value;
             }
 
-            Junction junction = new Junction(Convert.ToInt64(array1[0]), Convert.ToDouble(array1[1]), Convert.ToDouble(array1[2]));
+            Junction junction = new Junction(Convert.ToDouble(array1[1]), Convert.ToDouble(array1[2]));
 
             Junctions.Add(Convert.ToInt64(array1[0]), junction);
 
@@ -207,13 +254,13 @@ public partial class MainPage : ContentPage
            
                 if (Convert.ToInt32(array1[7]) != 0)
             {
-                Road road = new Road(Convert.ToDouble(array1[3]), Convert.ToInt64(array1[0]), Convert.ToInt32(array1[7]), array1[10], array1[9], true);
+                Road road = new Road(Convert.ToDouble(array1[3]), Convert.ToInt32(array1[7]), array1[10], array1[9], true);
                 var edge = new TaggedEdge<Junction, Road>(Junctions[Convert.ToInt64(array1[1])], Junctions[Convert.ToInt64(array1[2])], road);
                 graph.AddEdge(edge);
             }
             if (Convert.ToInt32(array1[8]) != 0)
             {
-                Road road = new Road(Convert.ToDouble(array1[3]), Convert.ToInt64(array1[0]), Convert.ToInt32(array1[8]), array1[10], array1[9], false);
+                Road road = new Road(Convert.ToDouble(array1[3]), Convert.ToInt32(array1[8]), array1[10], array1[9], false);
 
                 var edge = new TaggedEdge<Junction, Road>(Junctions[Convert.ToInt64(array1[2])], Junctions[Convert.ToInt64(array1[1])], road);
                 graph.AddEdge(edge);
@@ -227,7 +274,7 @@ public partial class MainPage : ContentPage
     }
 
 
-    private void OnNewRouteBtnClicked(object sender, EventArgs e)
+    private async void OnNewRouteBtnClicked(object sender, EventArgs e)
     {
         if (startIndex != -1 & endIndex != -1)
         {
@@ -240,13 +287,29 @@ public partial class MainPage : ContentPage
 
             map.MapElements.Clear();
 
-            PathFinder(nearest_node(startLat, startLon), nearest_node(endLat, endLon));
+            Junction start_node = Nearest_Node(startLat, startLon);
+
+            Junction end_node = Nearest_Node(endLat, endLon);
+
+            if(start_node != end_node)
+            {
+                PathFinder(Nearest_Node(startLat, startLon), Nearest_Node(endLat, endLon));
+            }
+            else
+            {
+                await DisplayAlert("Error", "Start and end point are too close together or one or more is not within Bristol.", "OK");
+            }
+
+        }
+        else
+        {
+            await DisplayAlert("Error", "Pick start and end point first.", "OK");
         }
     }
 
-    public static string routeAsString;
+    private static string routeAsString;
 
-    private static readonly HttpClient client = new HttpClient();
+    private static readonly HttpClient httpClient = new HttpClient();
 
     private async void OnSaveRouteBtnClicked(object sender, EventArgs e)
     {
@@ -265,8 +328,9 @@ public partial class MainPage : ContentPage
 
                 var content = new FormUrlEncodedContent(values);
 
-                var response = await client.PostAsync("https://chirk-rhythm.000webhostapp.com/routeentry.php", content);
+                var response = await httpClient.PostAsync("https://chirk-rhythm.000webhostapp.com/routeentry.php", content);
                 var responseString = await response.Content.ReadAsStringAsync();
+                await DisplayAlert("Success", "Route saved.", "OK");
             }
             catch (WebException)
             {
@@ -279,32 +343,31 @@ public partial class MainPage : ContentPage
         }
     }
 
-        public void PathFinder(Junction start_node, Junction goal_node)
+    protected void PathFinder(Junction start_node, Junction goal_node)
     {
+        bool pathFound = false;
+
         List<Junction> openList = new List<Junction>();
         List<Junction> closedList = new List<Junction>();
-        List<FinalPathNodes> parts = new List<FinalPathNodes>();
 
         openList.Add(start_node);
 
-        openList[0].g = 0;
-
-        openList[0].h = haversine(start_node.lat, start_node.longitude, goal_node.lat, goal_node.longitude); 
+        double H = haversine(start_node.getLat(), start_node.getLon(), goal_node.getLat(), goal_node.getLon()); 
             
-
-
-        openList[0].f = openList[0].h;
+        openList[0].setF(H + openList[0].getG());
 
         Junction currentNode = openList[0];
 
-        while (openList != null)
+        var watch = System.Diagnostics.Stopwatch.StartNew();
+
+        while (openList != null && watch.ElapsedMilliseconds<20000)
         {
             double lowestF = -1;
             foreach (Junction junction in openList)
             {
-                if (lowestF == -1 || junction.f < lowestF)
+                if (lowestF == -1 || junction.getF() < lowestF)
                 {
-                    lowestF = junction.f;
+                    lowestF = junction.getF();
                     currentNode = junction;
                 }
             }
@@ -313,168 +376,146 @@ public partial class MainPage : ContentPage
     
             if(currentNode == goal_node)
             {
-                double totalDistance = 0;
-                do
-                {
-                    
-                    Junction previousNode = currentNode.parent;
-
-                    Road f = currentNode.road;
-                    totalDistance += f.length;
-
-                    string k = f.linestring.Remove(0, 11);
-                    k = k.Remove(k.Length - 1);
-                    k = k.Replace(", ", ",");
-                    string[] coords = k.Split(',');
-                    if (f.forward)
-                    {
-                        for (int i = (coords.Length-1); i > -1; i--)
-                        {
-                            string[] final = coords[i].Split(' ');
-                            FinalPathNodes m = new FinalPathNodes(Convert.ToDouble(final[1]), Convert.ToDouble(final[0]));
-                            parts.Add(m);
-                        }
-                    }
-                    else
-                    {
-
-                        foreach (string coord in coords)
-                        {
-                            string[] final = coord.Split(' ');
-                            FinalPathNodes m = new FinalPathNodes(Convert.ToDouble(final[1]), Convert.ToDouble(final[0]));
-                            parts.Add(m);
-                        }
-                    }
-
-                    currentNode = previousNode;
-
-                } while (currentNode.parent != null);
-
-                var mapLine = new Microsoft.Maui.Controls.Maps.Polyline
-                {
-                    StrokeWidth = 8,
-                    StrokeColor = Color.Parse("#1BA1E2")
-                };
-
-                routeAsString = "";
-
-                foreach (FinalPathNodes item in parts)
-                {
-                    routeAsString += (item.longitude.ToString()+" "+item.latitude.ToString()+",");
-                    mapLine.Geopath.Add(new Location(item.latitude, item.longitude));
-                }
-                routeAsString = routeAsString.Remove(routeAsString.Length-1);
-
-                map.MapElements.Add(mapLine);
-
-                var BristolLoc = new Location(((start_node.lat + goal_node.lat) / 2), ((start_node.longitude + goal_node.longitude) / 2));
-
-                double maxdistance = haversine(start_node.lat, start_node.longitude, goal_node.lat, goal_node.longitude);
-
-                MapSpan mapSpan = MapSpan.FromCenterAndRadius(BristolLoc, Distance.FromKilometers(maxdistance/2000+0.25));
-                map.MoveToRegion(mapSpan);
-
-                if (totalDistance < 1000)
-                {
-                    DistanceDisplay.Text = Convert.ToString(Math.Round(totalDistance)) + " metres     ";
-                }
-                else
-                {
-                    DistanceDisplay.Text = Convert.ToString(Math.Round((totalDistance/1000),1)) + " kilometres     ";
-                }
-
-                try
-                {
-                    double speed = 15;
-                    var RetrievePreferences = new WebClient();
-                    RetrievePreferences.Headers.Add("User-Agent", ".NET Application CycleThere");
-                    string json = RetrievePreferences.DownloadString("https://chirk-rhythm.000webhostapp.com/speed.php");
-                    var objects = JArray.Parse(json);
-                    foreach (JObject item in objects)
-                    {
-                        if (item.GetValue("SpeedDescription").ToString() == User.Speed)
-                        {
-                            speed = Convert.ToDouble(item.GetValue("SpeedNumber"));
-                            break;
-                        }
-                    }
-
-                    TimeDisplay.Text = Math.Round((totalDistance / 1000 / speed * 60), 0) + " minutes";
-
-                }
-                catch (WebException)
-                {
-                    DisplayAlert("Network error", "Please check your connection and try again.", "OK");
-                }
-
-                break;
+                pathFound = true;
+                DisplayRoute(currentNode, start_node, goal_node);
+                break; 
             }
             else
             {
                 foreach (var edge in graphs[0].OutEdges(currentNode))
                 {
-                    double cycletrackmultiplier = 1;
+                    double notacycletrackmultiplier = 1;
                     double roadspeedmultiplier = 1;
-                    if (User.KeepToCycleTracks == true & edge.Tag.isCycleTrack == false)
+                    if (User.KeepToCycleTracks == true & edge.Tag.getIsCycleTrack() == false)
                     {
-                        cycletrackmultiplier = 3;
+                        notacycletrackmultiplier = 3;
                     }
-                    if (User.AvoidFastRoads == true & edge.Tag.fastSpeed == true)
+                    if (User.AvoidFastRoads == true & edge.Tag.getIsFastSpeed() == true)
                     {
                         roadspeedmultiplier = 10;
                     }
-                    double provisionalH = haversine(edge.Target.lat, edge.Target.longitude, goal_node.lat, goal_node.longitude);
-                    double provisionalG = currentNode.g + Math.Max(cycletrackmultiplier,roadspeedmultiplier) * (edge.Tag.length);
-                    double provisionalF = provisionalH + provisionalG;
+                    H = haversine(edge.Target.getLat(), edge.Target.getLon(), goal_node.getLat(), goal_node.getLon());
+                    double provisionalG = currentNode.getG() + Math.Max(notacycletrackmultiplier,roadspeedmultiplier) * (edge.Tag.getLength());
+                    double provisionalF = H + provisionalG;
                     if (openList.Contains(edge.Target))
                     {
-                        if(provisionalF < edge.Target.f)
+                        if(provisionalF < edge.Target.getF())
                         {
-                            edge.Target.g = provisionalG;
-                            edge.Target.f = provisionalF;
-                            edge.Target.parent = currentNode;
-                            edge.Target.road = edge.Tag;
+                            edge.Target.switchPath(provisionalG, provisionalF, currentNode, edge.Tag);
                         }
                     }
                     else if (closedList.Contains(edge.Target))
                     {
-                        if (provisionalF < edge.Target.f)
+                        if (provisionalF < edge.Target.getF())
                         {
                             closedList.Remove(edge.Target);
-                            edge.Target.g = provisionalG;
-                            edge.Target.f = provisionalF;
-                            edge.Target.parent = currentNode;
-                            edge.Target.road = edge.Tag;
+                            edge.Target.switchPath(provisionalG, provisionalF, currentNode, edge.Tag);
                             openList.Add(edge.Target);
                         }
                     }
                     else
                     {
-                        edge.Target.g = provisionalG;
-                        edge.Target.f = provisionalF;
-                        edge.Target.parent = currentNode;
-                        edge.Target.road = edge.Tag;
+                        edge.Target.switchPath(provisionalG, provisionalF, currentNode, edge.Tag);
                         openList.Add(edge.Target);
                     }
                 }
             }
+        }
+        if (!pathFound)
+        {
+            DisplayAlert("Route generation error", "Route likely not fully accessible by bike.", "OK");
+        }
+    }
+
+    private void DisplayRoute(Junction currentNode, Junction start_node, Junction goal_node)
+    {
+        List<Node> finalNodesList = new List<Node>();
+
+        double totalDistance = 0;
+        do
+        {
+
+            Junction previousNode = currentNode.getParent();
+
+            Road previousRoad = currentNode.getRoad();
+            totalDistance += previousRoad.getLength();
+
+            string previousRoadLinestring = previousRoad.getLinestring().Remove(0, 11);
+            previousRoadLinestring = previousRoadLinestring.Remove(previousRoadLinestring.Length - 1);
+            previousRoadLinestring = previousRoadLinestring.Replace(", ", ",");
+            string[] coords = previousRoadLinestring.Split(',');
+            if (previousRoad.getIsForward())
+            {
+                for (int i = (coords.Length - 1); i > -1; i--)
+                {
+                    string[] finalCoordSet = coords[i].Split(' ');
+                    Node nodeForPath = new Node(Convert.ToDouble(finalCoordSet[1]), Convert.ToDouble(finalCoordSet[0]));
+                    finalNodesList.Add(nodeForPath);
+                }
+            }
+            else
+            {
+
+                foreach (string coord in coords)
+                {
+                    string[] finalCoordSet = coord.Split(' ');
+                    Node nodeForPath = new Node(Convert.ToDouble(finalCoordSet[1]), Convert.ToDouble(finalCoordSet[0]));
+                    finalNodesList.Add(nodeForPath);
+                }
+            }
+
+            currentNode = previousNode;
+
+        } while (currentNode.getParent() != null);
+
+        var mapLine = new Microsoft.Maui.Controls.Maps.Polyline
+        {
+            StrokeWidth = 8,
+            StrokeColor = Color.Parse("#1BA1E2")
+        };
+
+        routeAsString = "";
+
+        foreach (Node item in finalNodesList)
+        {
+            routeAsString += (item.getLon().ToString() + " " + item.getLat().ToString() + ",");
+            mapLine.Geopath.Add(new Location(item.getLat(), item.getLon()));
+        }
+        routeAsString = routeAsString.Remove(routeAsString.Length - 1);
+
+        map.MapElements.Add(mapLine);
+
+        var BristolLoc = new Location(((start_node.getLat() + goal_node.getLat()) / 2), ((start_node.getLon()+ goal_node.getLon()) / 2));
+
+        double maxdistance = haversine(start_node.getLat(), start_node.getLon(), goal_node.getLat(), goal_node.getLon());
+
+        MapSpan mapSpan = MapSpan.FromCenterAndRadius(BristolLoc, Distance.FromKilometers(maxdistance / 2000 + 0.25));
+        map.MoveToRegion(mapSpan);
+
+        if (totalDistance < 1000)
+        {
+            DistanceDisplay.Text = Convert.ToString(Math.Round(totalDistance)) + " metres     ";
+        }
+        else
+        {
+            DistanceDisplay.Text = Convert.ToString(Math.Round((totalDistance / 1000), 1)) + " kilometres     ";
+        }
 
             
-        }
-        // failed
+            TimeDisplay.Text = Math.Round((totalDistance / 1000 / User.SpeedNumber * 60), 0) + " minutes";
 
     }
 
-    public Junction nearest_node(double lat, double lon)
+protected Junction Nearest_Node(double lat, double lon)
     {
         double distanceToNode = -1;
         Junction nearestNode = Junctions[291583393];
         foreach(var node in graphs[0].Vertices)
         {
 
-            if (distanceToNode == -1 || haversine(lat, lon, node.lat, node.longitude) < distanceToNode)
+            if (distanceToNode == -1 || haversine(lat, lon, node.getLat(), node.getLon()) < distanceToNode)
             {
-                distanceToNode = haversine(lat, lon, node.lat, node.longitude);
+                distanceToNode = haversine(lat, lon, node.getLat(), node.getLon());
                 nearestNode = node;
             }
         }
@@ -482,7 +523,7 @@ public partial class MainPage : ContentPage
         return nearestNode;
     }
 
-    public double haversine(double lat1, double lon1, double lat2, double lon2)
+    protected double haversine(double lat1, double lon1, double lat2, double lon2)
     {
         const double R = 6371e3; // metres
         double φ1 = lat1 * Math.PI / 180; // φ, λ in radians
@@ -500,10 +541,13 @@ public partial class MainPage : ContentPage
         return d;
     }
 
-    public double[,] coordStart = new double[2, 20];
+    private double[,] coordStart = new double[2, 20];
 
-    public double[,] coordEnd = new double[2, 20];
+    private double[,] coordEnd = new double[2, 20];
 
+    private int startIndex = -1;
+
+    private int endIndex = -1;
     private void OnEnterStart(object sender, EventArgs e)
     {
         try
@@ -551,29 +595,6 @@ public partial class MainPage : ContentPage
             DisplayAlert("Network error", "Please check your connection and try again.", "OK");
         }
 
-    }
-
-    public int startIndex = -1;
-
-
-    void OnStartAddressPickerSelectedIndexChanged(object sender, EventArgs e)
-    {
-        startPoint.Focus();
-        var picker = (Picker)sender;
-        int selectedIndex = picker.SelectedIndex;
-
-        startIndex = selectedIndex;
-    }
-
-    public int endIndex = -1;
-
-    void OnEndAddressPickerSelectedIndexChanged(object sender, EventArgs e)
-    {
-        endPoint.Focus();
-        var picker = (Picker)sender;
-        int selectedIndex = picker.SelectedIndex;
-
-        endIndex = selectedIndex;
     }
 
     private void OnEnterEnd(object sender, EventArgs e)
@@ -624,6 +645,26 @@ public partial class MainPage : ContentPage
             DisplayAlert("Network error", "Please check your connection and try again.", "OK");
         }
     }
+
+    private void OnStartAddressPickerSelectedIndexChanged(object sender, EventArgs e)
+    {
+        startPoint.Focus();
+        var picker = (Picker)sender;
+        int selectedIndex = picker.SelectedIndex;
+
+        startIndex = selectedIndex;
+    }
+
+
+    private void OnEndAddressPickerSelectedIndexChanged(object sender, EventArgs e)
+    {
+        endPoint.Focus();
+        var picker = (Picker)sender;
+        int selectedIndex = picker.SelectedIndex;
+
+        endIndex = selectedIndex;
+    }
+
     
 
 }
