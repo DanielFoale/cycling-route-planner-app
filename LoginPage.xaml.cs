@@ -13,9 +13,22 @@ public partial class LoginPage : ContentPage
 	public LoginPage()
 	{
 		InitializeComponent();
-	}
+        
+    }
+    protected override void OnNavigatedTo(NavigatedToEventArgs args)
+    {
+        base.OnNavigatedTo(args);
+        usernameEntry.Text = null;
+        passwordEntry.Text = null;
+        usernameEntry.IsVisible = true;
+        passwordEntry.IsVisible = true;
+        label.IsVisible = true;
+        button.IsVisible = true;
+        label2.IsVisible = false;
+        error.Text = null;
+    }
 
-    private async void Button_Clicked(object sender, EventArgs e)
+    private async void LoginButton_Clicked(object sender, EventArgs e)
     {
         error.Text = null;
         if (UsernameEntered() & PasswordEntered())
@@ -29,11 +42,14 @@ public partial class LoginPage : ContentPage
                 bool usernameFound = false;
                 foreach (JObject item in objects)
                 {
+                    
                     if (item.GetValue("Username").ToString() == usernameEntry.Text)
                     {
                         usernameFound = true;
                         User.UserLoggedIn = usernameEntry.Text;
-                        if (item.GetValue("Password").ToString() == passwordEntry.Text)
+                        SHA hashing = new SHA();
+                        string hashedEntryPass = hashing.SHA256_hashing(passwordEntry.Text);
+                        if (item.GetValue("Password").ToString() == hashedEntryPass)
                         {
                             usernameEntry.Text = null;
                             passwordEntry.Text = null;
@@ -61,7 +77,7 @@ public partial class LoginPage : ContentPage
         }
         
     }
-    private async void TapGestureRecongnizer_Tapped(object sender, EventArgs e)
+    private async void RegistrationLabel_Clicked(object sender, EventArgs e)
     {
         usernameEntry.Text = null;
         passwordEntry.Text = null;
@@ -92,13 +108,4 @@ public partial class LoginPage : ContentPage
         }
     }
 
-    protected override void OnNavigatedTo(NavigatedToEventArgs args)
-    {
-        base.OnNavigatedTo(args);
-        usernameEntry.IsVisible = true;
-        passwordEntry.IsVisible = true;
-        label.IsVisible = true;
-        button.IsVisible = true;
-        label2.IsVisible = false;
-    }
     }

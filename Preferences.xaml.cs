@@ -77,9 +77,9 @@ public partial class PreferencesPage : ContentPage
         }
     }
 
-    private static readonly HttpClient client = new HttpClient();
+    private static readonly HttpClient httpClient = new HttpClient();
 
-    private async void Button_Clicked(object sender, EventArgs e)
+    private async void SaveButton_Clicked(object sender, EventArgs e)
     {
         string Speed;
         string KeepToCycleTracksString;
@@ -139,7 +139,8 @@ public partial class PreferencesPage : ContentPage
         try
         {
             
-            var response = await client.PostAsync("https://chirk-rhythm.000webhostapp.com/update.php", content);
+            var response = await httpClient.PostAsync("https://chirk-rhythm.000webhostapp.com/update.php", content);
+            await DisplayAlert("Success", "Preferences saved.", "OK");
         }
         catch (WebException)
         {

@@ -21,13 +21,13 @@
             VerticalOptions="Center"
             HorizontalOptions="Fill"
             Text="Create account"
-            Clicked ="Button_Clicked"
+            Clicked ="RegisterButton_Clicked"
             FontSize="18"/>
 
         <Label x:Name="already" Text="Already have an account? Sign in here" VerticalOptions="Center" HorizontalOptions="Start" TextColor="MediumPurple" FontSize="16" Margin="10,10">
 
         <Label.GestureRecognizers>
-            <TapGestureRecognizer Tapped="Label_Clicked"/>
+            <TapGestureRecognizer Tapped="LoginLabel_Clicked"/>
         </Label.GestureRecognizers>
     </Label>
 
